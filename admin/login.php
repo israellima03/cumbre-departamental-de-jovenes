@@ -56,8 +56,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login — Admin Encuentro</title>
+  <title>Login — Admin Cumbre</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/login.css?v=<?php echo filemtime(__DIR__.'/css/login.css'); ?>">
 </head>
 <body>
@@ -70,7 +71,7 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
           <i class="fa-solid fa-dove"></i>
         </div>
         <h1>Panel Administrativo</h1>
-        <p>Encuentro Departamental de Jóvenes</p>
+        <p>Cumbre Departamental de Jóvenes</p>
       </div>
 
       <!-- error PHP -->

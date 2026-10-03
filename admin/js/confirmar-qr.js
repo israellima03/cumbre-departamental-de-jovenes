@@ -16,7 +16,7 @@ function cargar(){
 
     setText('qr-total-lbl', 'Cargando...');
     document.getElementById('tbody-qr').innerHTML =
-        '<tr><td colspan="14" class="tabla-loading">' +
+        '<tr><td colspan="12" class="tabla-loading">' +
         '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
 
     var url = 'api_qr.php?accion=listar'
@@ -52,7 +52,7 @@ function renderTabla(){
   if(!tbody) return;
 
   if(!filtrados.length){
-    tbody.innerHTML    = '<tr><td colspan="13" class="tabla-vacia"><i class="fa-solid fa-inbox" style="display:block;font-size:28px;margin-bottom:8px;"></i>No hay inscripciones</td></tr>';
+    tbody.innerHTML    = '<tr><td colspan="12" class="tabla-vacia"><i class="fa-solid fa-inbox" style="display:block;font-size:28px;margin-bottom:8px;"></i>No hay inscripciones</td></tr>';
     tbodyAcc.innerHTML = '<tr><td>—</td></tr>';
     if(lbl) lbl.textContent = '0 registros';
     renderPaginacion();
@@ -80,7 +80,6 @@ function renderTabla(){
       '<td>' + htmlEsc(ins.iglesia||'—') + '</td>' +
       '<td>' + htmlEsc(ins.paquete||'—') + '</td>' +
       '<td>Bs. ' + fmt(ins.precio_paquete) + '</td>' +
-      '<td>Bs. ' + fmt(ins.precio_productos) + '</td>' +
       '<td style="color:var(--green);">- Bs. ' + fmt(ins.descuento_aplicado) + '</td>' +
       '<td><strong>Bs. ' + fmt(ins.precio_final) + '</strong></td>' +
       '<td>' + formatFecha(ins.fecha_pago) + '</td>' +
@@ -192,7 +191,6 @@ window.abrirModal = function(idx){
         '<div class="modal-section-title">Detalle de Pago</div>' +
         mf('Paquete',          htmlEsc(ins.paquete||'—')) +
         mf('Precio paquete',   'Bs. ' + fmt(ins.precio_paquete)) +
-        mf('Precio productos', 'Bs. ' + fmt(ins.precio_productos)) +
         mf('Descuento',        '- Bs. ' + fmt(ins.descuento_aplicado)) +
         '<div class="modal-field full"><span class="modal-label">TOTAL A PAGAR</span>' +
         '<span class="modal-value" style="font-size:20px;font-weight:700;color:var(--sidebar-bg);">' +

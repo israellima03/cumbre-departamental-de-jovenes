@@ -106,7 +106,7 @@ $iconos_mat = [
 
                   <?php else: ?>
 
-                    <div style="width:80px;height:80px;border-radius:50%;background:#03045e;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.8em;">
+                    <div style="width:80px;height:80px;border-radius:50%;background:#2C2668;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.8em;">
                       <i class="fa-solid fa-user"></i>
                     </div>
 
@@ -236,10 +236,10 @@ $iconos_mat = [
 
   <?php endif; ?>
   <!-- MODAL PREGUNTAS APROBADAS -->
-  <div id="modal-preguntas-overlay" style="display:none;position:fixed;inset:0;background:rgba(3,4,94,0.85);z-index:9999;place-items:center;padding:20px;">
+  <div id="modal-preguntas-overlay" style="display:none;position:fixed;inset:0;background:rgba(44,38,104,0.85);z-index:9999;place-items:center;padding:20px;">
     <div id="modal-preguntas" style="background:#fff;border-radius:16px;width:100%;max-width:600px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);max-height:90vh;display:flex;flex-direction:column;">
     
-      <div style="background:linear-gradient(135deg,#03045e,#0077b6);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+      <div style="background:linear-gradient(135deg,#2C2668,#5C625B);padding:20px 24px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
         <div>
           <h3 style="font-family:'Oswald',sans-serif;color:#fff;margin:0;font-size:1.1em;letter-spacing:1px;">
             <i class="fa-solid fa-comments"></i> Preguntas Aprobadas
@@ -259,8 +259,8 @@ $iconos_mat = [
           <div style="margin-bottom:16px;">
             <span id="modal-pq-num" style="font-family:'Oswald',sans-serif;font-size:0.8em;letter-spacing:2px;color:#9ca3af;text-transform:uppercase;"></span>
           </div>
-          <blockquote id="modal-pq-texto" style="font-family:'PT Sans',sans-serif;font-size:1.4em;color:#03045e;line-height:1.6;margin:0 0 20px;font-style:italic;padding:0 10px;"></blockquote>
-          <div style="height:3px;background:linear-gradient(90deg,#da002b,#0089e4);border-radius:2px;width:60px;margin:0 auto;"></div>
+          <blockquote id="modal-pq-texto" style="font-family:'Montserrat',sans-serif;font-size:1.4em;color:#2C2668;line-height:1.6;margin:0 0 20px;font-style:italic;padding:0 10px;"></blockquote>
+          <div style="height:3px;background:linear-gradient(90deg,#E8750A,#E8750A);border-radius:2px;width:60px;margin:0 auto;"></div>
         </div>
         <div id="modal-pq-vacio" style="display:none;text-align:center;color:#9ca3af;">
           <i class="fa-solid fa-comment-slash" style="font-size:3em;display:block;margin-bottom:12px;color:#e1e1e1;"></i>
@@ -271,12 +271,12 @@ $iconos_mat = [
       <!-- NAVEGACIÓN -->
       <div id="modal-pq-nav" style="display:none;padding:16px 24px;border-top:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
         <button id="btn-pq-ant" onclick="navegarPregunta(-1)"
-                style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#03045e;color:#fff;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-size:0.9em;cursor:pointer;transition:all .2s;">
+                style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#2C2668;color:#fff;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-size:0.9em;cursor:pointer;transition:all .2s;">
           <i class="fa-solid fa-chevron-left"></i> Anterior
         </button>
         <span id="modal-pq-progreso" style="font-size:0.85em;color:#9ca3af;font-family:'Oswald',sans-serif;letter-spacing:1px;"></span>
         <button id="btn-pq-sig" onclick="navegarPregunta(1)"
-                style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#03045e;color:#fff;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-size:0.9em;cursor:pointer;transition:all .2s;">
+                style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#2C2668;color:#fff;border:none;border-radius:8px;font-family:'Oswald',sans-serif;font-size:0.9em;cursor:pointer;transition:all .2s;">
           Siguiente <i class="fa-solid fa-chevron-right"></i>
         </button>
       </div>

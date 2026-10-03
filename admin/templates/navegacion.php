@@ -8,7 +8,7 @@ $solo_basico = ['Lider distrital', 'Lider local', 'secretario', 'Equipo departam
     <div class="sidebar-brand">
       <div class="brand-icon"><i class="fa-solid fa-dove"></i></div>
       <div class="brand-text">
-        <span class="brand-name">Encuentro</span>
+        <span class="brand-name">Cumbre</span>
         <span class="brand-sub">Jóvenes</span>
       </div>
     </div>
@@ -22,11 +22,11 @@ $solo_basico = ['Lider distrital', 'Lider local', 'secretario', 'Equipo departam
         <span>Dashboard</span>
       </a>
 
-      <!-- CONFIRMAR QR — solo admin full -->
+      <!-- CONFIRMAR INSCRIPCIONES (QR y efectivo) — solo admin full -->
       <?php if(puede($admin_full)): ?>
-      <a href="confirmar-qr.php" class="nav-item">
-        <i class="fa-solid fa-qrcode"></i>
-        <span>Confirmar QR</span>
+      <a href="confirmar-inscripciones.php" class="nav-item">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>Confirmar Inscripciones</span>
       </a>
       <?php endif; ?>
       <!-- Ver comisiones o editar comisiones -->
@@ -61,10 +61,6 @@ $solo_basico = ['Lider distrital', 'Lider local', 'secretario', 'Equipo departam
       <a href="reportes.php" class="nav-item">
         <i class="fa-solid fa-chart-bar"></i>
         <span>Reportes</span>
-      </a>
-      <a href="productos.php" class="nav-item">
-        <i class="fa-solid fa-shirt"></i>
-        <span>Productos</span>
       </a>
       <?php endif; ?>
 
@@ -115,24 +111,6 @@ $solo_basico = ['Lider distrital', 'Lider local', 'secretario', 'Equipo departam
         </a>
       </div>
 
-
-      <!-- CONCURSOS -->
-      <?php if(puede(['Administrador','Lider departamental','Lider distrital','tesorera','Equipo departamental','Lider local'])): ?>
-      <div class="nav-section-label">Concursos</div>
-      <div class="nav-item nav-parent" id="nav-concursos-toggle">
-        <i class="fa-solid fa-trophy"></i>
-        <span>Concursos</span>
-        <i class="fa-solid fa-chevron-down nav-arrow"></i>
-      </div>
-      <div class="nav-submenu" id="submenu-concursos">
-        <a href="concursos.php?tipo=deportivo" class="nav-subitem">
-          <i class="fa-solid fa-futbol"></i> Deportivo
-        </a>
-        <a href="concursos.php?tipo=biblico" class="nav-subitem">
-         <i class="fa-solid fa-bible"></i> Bíblico
-        </a>
-      </div>
-      <?php endif; ?>
 
       <!-- ADMINISTRADORES — solo Administrador, Lider departamental -->
       <?php if(puede(['Administrador', 'Lider departamental'])): ?>

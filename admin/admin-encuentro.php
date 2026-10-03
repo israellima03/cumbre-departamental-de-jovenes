@@ -15,7 +15,7 @@ include_once 'funciones/funciones.php';
 /* roles con permiso de acción */
 $puede_gestionar = puede(['Administrador','Lider departamental','Lider distrital','tesorera','secretario']);
 
-/* puede confirmar entregas (producto y material) */
+/* puede confirmar entregas de material */
 $puede_entregar  = puede(['Administrador','Lider departamental','Lider distrital','tesorera','secretario','Equipo departamental']);
 $puede_ver_solo  = puede(['Lider local']);
 
@@ -32,10 +32,6 @@ $paquetes_modal = [];
 $res = $conn->query("SELECT p.id, p.nombre, ROUND(p.precio - (p.precio * COALESCE(d.porcentaje,0)/100),0) AS precio_final, p.cupos_disponibles FROM paquetes p LEFT JOIN paquete_descuentos pd ON pd.paquete_id=p.id LEFT JOIN descuentos d ON d.id=pd.descuento_id AND d.activo=1 ORDER BY p.precio");
 while($r = $res->fetch_assoc()) $paquetes_modal[] = $r;
 
-$productos_modal = [];
-$res = $conn->query("SELECT id, nombre, precio, tipo, cupos_disponibles FROM productos WHERE cupos_disponibles > 0 ORDER BY nombre");
-while($r = $res->fetch_assoc()) $productos_modal[] = $r;
-
 $distritos_modal = [];
 $res = $conn->query("SELECT id, nombre FROM distritos ORDER BY nombre");
 while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
@@ -47,7 +43,7 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
   <div class="page-header">
     <div>
       <h1 class="page-title">Panel <span>Administrativo</span></h1>
-      <p class="page-sub">Resumen logístico del Encuentro Departamental de Jóvenes.</p>
+      <p class="page-sub">Resumen logístico de la Cumbre Departamental de Jóvenes.</p>
     </div>
     <?php if($puede_gestionar): ?>
     <button class="btn-primary" id="btn-nueva-inscripcion">
@@ -147,17 +143,11 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
             <th>Iglesia</th>
             <th>Distrito</th>
             <th>Paquete</th>
-            <th>Productos</th>
             <th>Tipo Pago</th>
             <th>Estado</th>
-            <!-- ── NUEVAS COLUMNAS ── -->
-            <th title="¿Productos/poleras entregados?">
-              <i class="fa-solid fa-shirt"></i> Producto
-            </th>
             <th title="¿Material/regalo entregado?">
               <i class="fa-solid fa-gift"></i> Material
             </th>
-            <!-- ── FIN NUEVAS ── -->
             <th>Fecha</th>
             <th>Registró</th>
             <th>Confirmó</th>
@@ -166,7 +156,7 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
         </thead>
         <tbody id="tbody-inscritos">
           <tr>
-            <td colspan="15" class="tabla-loading">
+            <td colspan="13" class="tabla-loading">
               <i class="fa-solid fa-spinner fa-spin"></i> Cargando...
             </td>
           </tr>
@@ -228,20 +218,8 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
             <input type="text" id="ni-carnet" class="input-filtro" style="width:100%;">
           </div>
           <div class="modal-field">
-            <span class="modal-label">Fecha de Nacimiento *</span>
-            <input type="hidden" id="ni-fecha">
-            <div style="display:flex;gap:8px;align-items:center;position:relative;">
-              <span id="ni-fecha-display" style="font-size:14px;font-weight:600;color:var(--txt);min-width:100px;"></span>
-              <button type="button" id="ni-fecha-btn" class="btn-secondary" style="padding:7px 14px;font-size:12px;white-space:nowrap;">
-                <i class="fa-solid fa-calendar"></i> Seleccionar fecha
-              </button>
-            </div>
-
-          </div>
-          <div class="modal-field">
-            <span class="modal-label">Edad (automático)</span>
-            <input type="text" id="ni-edad" class="input-filtro" readonly
-                   style="width:100%;background:var(--bg);">
+            <span class="modal-label">Edad *</span>
+            <input type="number" id="ni-edad" class="input-filtro" min="5" max="100" style="width:100%;">
           </div>
           <div class="modal-field">
             <span class="modal-label">Celular *</span>
@@ -302,86 +280,6 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
             </div>
           </div>
 
-          <?php if(!empty($productos_modal)): ?>
-          <div class="modal-section-title" style="grid-column:span 2;">
-            Productos Adicionales (opcional)
-          </div>
-          <?php foreach($productos_modal as $prod): ?>
-            <div class="modal-field"
-                 style="border:1px solid var(--border);border-radius:8px;padding:10px;">
-              <span class="modal-label">
-                <?php echo htmlspecialchars($prod['nombre']); ?>
-                — Bs. <?php echo number_format($prod['precio'],2); ?>
-              </span>
-              <?php $tipo_p = strtolower(trim($prod['tipo'])); ?>
-              <?php if($tipo_p !== 'gorra'): ?>
-              <div style="display:flex;gap:8px;margin-top:6px;align-items:center;flex-wrap:wrap;">
-                <select class="ni-prod-genero select-filtro"
-                        data-prod-id="<?php echo $prod['id']; ?>" style="width:100px;">
-                  <option value="hombre">Hombre</option>
-                  <option value="mujer">Mujer</option>
-                </select>
-                <select class="ni-prod-talla select-filtro"
-                        data-prod-id="<?php echo $prod['id']; ?>"
-                        data-tipo="<?php echo $tipo_p; ?>" style="width:100px;">
-                  <option value="">Talla</option>
-                  <option value="XS">XS</option><option value="S">S</option>
-                  <option value="M">M</option><option value="L">L</option>
-                  <option value="XL">XL</option><option value="XXL">XXL</option>
-                </select>
-                <div class="cantidad-ruleta" style="display:flex;align-items:center;gap:6px;">
-                  <button type="button" class="btn-cant-menos"
-                          data-prod-id="<?php echo $prod['id']; ?>"
-                          style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);font-size:16px;cursor:pointer;display:grid;place-items:center;">−</button>
-                  <span class="ni-prod-cant-display"
-                        data-prod-id="<?php echo $prod['id']; ?>"
-                        style="min-width:24px;text-align:center;font-weight:700;font-size:15px;">0</span>
-                  <input type="hidden" class="ni-prod-cant"
-                         data-prod-id="<?php echo $prod['id']; ?>"
-                         data-nombre="<?php echo htmlspecialchars($prod['nombre']); ?>"
-                         data-precio="<?php echo $prod['precio']; ?>"
-                         data-tipo="<?php echo $tipo_p; ?>"
-                         value="0">
-                  <button type="button" class="btn-cant-mas"
-                          data-prod-id="<?php echo $prod['id']; ?>"
-                          data-max="<?php echo $prod['cupos_disponibles']; ?>"
-                          style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);font-size:16px;cursor:pointer;display:grid;place-items:center;">+</button>
-                </div>
- 
-              </div>
-              <?php else: ?>
-              <div style="display:flex;gap:8px;margin-top:6px;align-items:center;flex-wrap:wrap;">
-                <select class="ni-prod-talla select-filtro"
-                        data-prod-id="<?php echo $prod['id']; ?>"
-                        data-tipo="gorra" style="width:130px;">
-                  <option value="">Talla</option>
-                  <option value="Pequeño">Pequeño</option>
-                  <option value="Mediano">Mediano</option>
-                  <option value="Grande">Grande</option>
-                  <option value="Extra Grande">Extra Grande</option>
-                </select>
-                <div class="cantidad-ruleta" style="display:flex;align-items:center;gap:6px;">
-                  <button type="button" class="btn-cant-menos"
-                          data-prod-id="<?php echo $prod['id']; ?>"
-                          style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);font-size:16px;cursor:pointer;display:grid;place-items:center;">−</button>
-                  <span class="ni-prod-cant-display"
-                        style="min-width:24px;text-align:center;font-weight:700;font-size:15px;">0</span>
-                  <input type="hidden" class="ni-prod-cant"
-                         data-prod-id="<?php echo $prod['id']; ?>"
-                         data-nombre="<?php echo htmlspecialchars($prod['nombre']); ?>"
-                         data-precio="<?php echo $prod['precio']; ?>"
-                         data-tipo="gorra"
-                         value="0">
-                  <button type="button" class="btn-cant-mas"
-                          data-prod-id="<?php echo $prod['id']; ?>"
-                          data-max="<?php echo $prod['cupos_disponibles']; ?>"
-                          style="width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:var(--card-bg);font-size:16px;cursor:pointer;display:grid;place-items:center;">+</button>
-                </div>
-              </div>
-              <?php endif; ?>
-            </div>
-          <?php endforeach; ?>
-          <?php endif; ?>
         </div>
       </div><!-- /paso-datos -->
 
@@ -396,6 +294,8 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
           <p style="font-size:13px;color:#78350f;margin-top:4px;">
             Una vez registrada la inscripción,
             <strong>debe entregar el dinero a la hermana Jael</strong>.
+            La inscripción quedará <strong>PENDIENTE</strong> hasta que tesorería confirme el pago
+            en <strong>Confirmar Inscripciones → Confirmar Efectivo</strong>.
             Esta inscripción no podrá ser eliminada.
           </p>
         </div>
@@ -413,7 +313,7 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
       </button>
       <button class="btn-primary" id="btn-ni-confirmar"
               style="display:none;background:var(--green);">
-        <i class="fa-solid fa-check"></i> Registrar y Confirmar
+        <i class="fa-solid fa-check"></i> Registrar Inscripción
       </button>
     </div>
   </div>
@@ -444,19 +344,8 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
           <input type="text" id="edit-carnet" class="input-filtro" style="width:100%;">
         </div>
         <div class="modal-field">
-          <span class="modal-label">Fecha Nacimiento</span>
-          <input type="hidden" id="edit-fecha">
-          <div style="display:flex;gap:8px;align-items:center;position:relative;">
-            <span id="edit-fecha-display" style="font-size:13px;font-weight:600;color:var(--txt);min-width:90px;"></span>
-            <button type="button" id="edit-fecha-btn" class="btn-secondary" style="padding:6px 12px;font-size:12px;">
-              <i class="fa-solid fa-calendar"></i> Cambiar
-            </button>
-          </div>
-        </div>
-        <div class="modal-field">
           <span class="modal-label">Edad</span>
-          <input type="text" id="edit-edad" class="input-filtro" readonly
-                 style="width:100%;background:var(--bg);">
+          <input type="number" id="edit-edad" class="input-filtro" min="5" max="100" style="width:100%;">
         </div>
         <div class="modal-field">
           <span class="modal-label">Celular</span>
@@ -505,36 +394,3 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
 </script>
 <?php $js_pagina = ['admin-encuentro.js']; ?>
 <?php include_once 'templates/footer.php'; ?>
-
-<script>
-/* ══ INIT RULETA CANTIDAD ══ */
-document.addEventListener('DOMContentLoaded', function(){
-  document.querySelectorAll('.btn-cant-menos').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var pid  = this.dataset.prodId;
-      var contenedor = this.closest('.cantidad-ruleta');
-      if(!contenedor) return;
-      var inp  = contenedor.querySelector('.ni-prod-cant');
-      var disp = contenedor.querySelector('.ni-prod-cant-display');
-      if(!inp) return;
-      var v = Math.max(0, parseInt(inp.value||0) - 1);
-      inp.value = v;
-      if(disp) disp.textContent = v;
-    });
-  });
-
-  document.querySelectorAll('.btn-cant-mas').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var contenedor = this.closest('.cantidad-ruleta');
-      if(!contenedor) return;
-      var inp  = contenedor.querySelector('.ni-prod-cant');
-      var disp = contenedor.querySelector('.ni-prod-cant-display');
-      var max  = parseInt(this.dataset.max||999);
-      if(!inp) return;
-      var v = Math.min(max, parseInt(inp.value||0) + 1);
-      inp.value = v;
-      if(disp) disp.textContent = v;
-    });
-  });
-});
-</script>

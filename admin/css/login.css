@@ -1,13 +1,13 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Montserrat', 'Segoe UI', sans-serif;
   min-height: 100vh;
 }
 
 .login-bg {
   min-height: 100vh;
-  background: linear-gradient(135deg, #03045e 0%, #0077b6 55%, #00b4d8 100%);
+  background: linear-gradient(135deg, #2C2668 0%, #5C625B 55%, #652C2A 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -20,7 +20,7 @@ body {
   padding: 48px 40px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 24px 60px rgba(3,4,94,.35);
+  box-shadow: 0 24px 60px rgba(44,38,104,.35);
   animation: slideUp .4s ease;
 }
 
@@ -38,7 +38,7 @@ body {
 .login-icono {
   width: 64px;
   height: 64px;
-  background: #03045e;
+  background: #E8750A;
   border-radius: 18px;
   display: inline-flex;
   align-items: center;
@@ -46,19 +46,21 @@ body {
   font-size: 1.6em;
   color: #fff;
   margin-bottom: 14px;
-  box-shadow: 0 8px 24px rgba(3,4,94,.3);
+  box-shadow: 0 8px 24px rgba(44,38,104,.3);
 }
 
 .login-logo h1 {
-  font-size: 1.25em;
-  color: #03045e;
-  font-weight: 800;
+  font-family: 'Anton', sans-serif;
+  font-size: 1.6em;
+  color: #2C2668;
+  font-weight: 400;
+  letter-spacing: .5px;
   margin-bottom: 4px;
 }
 
 .login-logo p {
   font-size: 0.82em;
-  color: #94a3b8;
+  color: #5C625B;
 }
 
 /* ERROR */
@@ -125,8 +127,8 @@ body {
 }
 
 .login-input-wrap input:focus {
-  border-color: #0077b6;
-  box-shadow: 0 0 0 3px rgba(0,119,182,.15);
+  border-color: #5C625B;
+  box-shadow: 0 0 0 3px rgba(92,98,91,.15);
 }
 
 /* boton ver contraseña */
@@ -142,13 +144,13 @@ body {
   transition: color .15s;
 }
 
-.btn-ver-pass:hover { color: #0077b6; }
+.btn-ver-pass:hover { color: #5C625B; }
 
 /* BOTON LOGIN */
 .login-btn {
   width: 100%;
   padding: 13px;
-  background: #03045e;
+  background: #2C2668;
   color: #fff;
   border: none;
   border-radius: 11px;
@@ -166,9 +168,9 @@ body {
 }
 
 .login-btn:hover {
-  background: #020344;
+  background: #E8750A;
   transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(3,4,94,.35);
+  box-shadow: 0 10px 28px rgba(44,38,104,.35);
 }
 
 .login-btn:active {
@@ -189,7 +191,7 @@ body {
   transition: color .15s;
 }
 
-.login-volver a:hover { color: #0077b6; }
+.login-volver a:hover { color: #5C625B; }
 
 /* RESPONSIVE */
 @media (max-width: 480px) {

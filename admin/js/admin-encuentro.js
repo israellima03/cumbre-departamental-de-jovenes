@@ -13,7 +13,6 @@ var inscritoCredencial = null;
 /* ══════════════════════════════════════
    HELPERS GLOBALES (definidos primero)
 ══════════════════════════════════════ */
-function pad(n){ return n<10?'0'+n:String(n); }
 function setText(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
 function val(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
@@ -24,165 +23,6 @@ function toast(msg,tipo){
   clearTimeout(toast._t);
   toast._t=setTimeout(function(){ el.classList.remove('show'); },3500);
 }
-function calcularEdad(fechaStr,edadId){
-  if(!fechaStr) return;
-  var hoy=new Date(), nac=new Date(fechaStr);
-  var e=hoy.getFullYear()-nac.getFullYear();
-  var m=hoy.getMonth()-nac.getMonth();
-  if(m<0||(m===0&&hoy.getDate()<nac.getDate())) e--;
-  var el=document.getElementById(edadId);
-  if(el) el.value=e>0?e:'';
-}
-
-/* ══════════════════════════════════════
-   DATE PICKER
-══════════════════════════════════════ */
-function crearDatePicker(inputId, displayId, btnId){
-  var input   = document.getElementById(inputId);
-  var display = document.getElementById(displayId);
-  var btn     = document.getElementById(btnId);
-  if(!input||!display||!btn) return;
-
-  var hoy = new Date();
-  var selY = hoy.getFullYear()-18, selM = hoy.getMonth()+1, selD = hoy.getDate();
-
-  if(input.value){
-    var parts = input.value.split('-');
-    if(parts.length===3){
-      selY=parseInt(parts[0]); selM=parseInt(parts[1]); selD=parseInt(parts[2]);
-    }
-  }
-
-  /* eliminar picker anterior si existe */
-  var pickerAnterior = document.getElementById(inputId+'-picker');
-  if(pickerAnterior) pickerAnterior.parentNode.removeChild(pickerAnterior);
-
-  var picker = document.createElement('div');
-  picker.id = inputId+'-picker';
-  picker.className = 'date-picker-popup';
-  picker.style.cssText = 'display:none;position:fixed;z-index:99999;';
-  document.body.appendChild(picker);
-
-  function posicionarPicker(){
-    var rect = btn.getBoundingClientRect();
-    var pickerH = 160;
-    var spaceAbajo = window.innerHeight - rect.bottom;
-    if(spaceAbajo < pickerH && rect.top > pickerH){
-      picker.style.top = (rect.top - pickerH - 6) + 'px';
-    } else {
-      picker.style.top = (rect.bottom + 6) + 'px';
-    }
-    var left = rect.left;
-    if(left + 300 > window.innerWidth) left = window.innerWidth - 310;
-    picker.style.left = Math.max(4, left) + 'px';
-  }
-
-  var meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
-               'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-
-  function diasEnMes(y,m){ return new Date(y,m,0).getDate(); }
-
-  function render(){
-    var dMax = diasEnMes(selY, selM);
-    if(selD > dMax) selD = dMax;
-
-    /* opciones día */
-    var optDias = '';
-    for(var d=1; d<=dMax; d++){
-      optDias += '<option value="'+d+'"'+(d===selD?' selected':'')+'>'+pad(d)+'</option>';
-    }
-
-    /* opciones mes */
-    var optMeses = '';
-    for(var m=1; m<=12; m++){
-      optMeses += '<option value="'+m+'"'+(m===selM?' selected':'')+'>'+meses[m-1]+'</option>';
-    }
-
-    /* opciones año */
-    var optAnios = '';
-    var anioActual = hoy.getFullYear();
-    for(var y=anioActual; y>=anioActual-100; y--){
-      optAnios += '<option value="'+y+'"'+(y===selY?' selected':'')+'>'+y+'</option>';
-    }
-
-    picker.innerHTML =
-      '<div class="dp-header">Fecha de Nacimiento</div>'+
-      '<div style="display:flex;gap:8px;margin-bottom:12px;">'+
-        '<div style="display:flex;flex-direction:column;gap:4px;flex:0 0 70px;">'+
-          '<label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--txt-xsoft);">Día</label>'+
-          '<select id="'+inputId+'-sel-d" style="padding:7px 6px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font-body);font-size:13px;color:var(--txt);background:var(--card-bg);outline:none;cursor:pointer;">'+optDias+'</select>'+
-        '</div>'+
-        '<div style="display:flex;flex-direction:column;gap:4px;flex:1;">'+
-          '<label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--txt-xsoft);">Mes</label>'+
-          '<select id="'+inputId+'-sel-m" style="padding:7px 6px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font-body);font-size:13px;color:var(--txt);background:var(--card-bg);outline:none;cursor:pointer;">'+optMeses+'</select>'+
-        '</div>'+
-        '<div style="display:flex;flex-direction:column;gap:4px;flex:0 0 80px;">'+
-          '<label style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--txt-xsoft);">Año</label>'+
-          '<select id="'+inputId+'-sel-y" style="padding:7px 6px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font-body);font-size:13px;color:var(--txt);background:var(--card-bg);outline:none;cursor:pointer;">'+optAnios+'</select>'+
-        '</div>'+
-      '</div>'+
-      '<button type="button" class="dp-ok" id="'+inputId+'-dp-ok">Confirmar</button>';
-
-    /* eventos selects */
-    document.getElementById(inputId+'-sel-d').addEventListener('change', function(){
-      selD = parseInt(this.value);
-    });
-    document.getElementById(inputId+'-sel-m').addEventListener('change', function(){
-      selM = parseInt(this.value);
-      /* re-renderizar para ajustar días del mes */
-      render();
-    });
-    document.getElementById(inputId+'-sel-y').addEventListener('change', function(){
-      selY = parseInt(this.value);
-      /* re-renderizar para ajustar días (año bisiesto) */
-      render();
-    });
-
-    /* confirmar */
-    document.getElementById(inputId+'-dp-ok').addEventListener('click', function(e){
-      e.stopPropagation();
-      e.preventDefault();
-      var v = selY+'-'+pad(selM)+'-'+pad(selD);
-      input.value = v;
-      display.textContent = pad(selD)+'/'+pad(selM)+'/'+selY;
-      picker.style.display = 'none';
-      input.dispatchEvent(new Event('change'));
-    });
-  }
-
-  /* abrir/cerrar */
-  btn.addEventListener('click', function(e){
-    e.stopPropagation();
-    e.preventDefault();
-    document.querySelectorAll('.date-picker-popup').forEach(function(p){
-      if(p.id !== picker.id) p.style.display='none';
-    });
-    if(picker.style.display==='none'||picker.style.display===''){
-      if(input.value){
-        var parts = input.value.split('-');
-        if(parts.length===3){
-          selY=parseInt(parts[0]); selM=parseInt(parts[1]); selD=parseInt(parts[2]);
-        }
-      }
-      render();
-      posicionarPicker();
-      picker.style.display='block';
-    } else {
-      picker.style.display='none';
-    }
-  });
-
-  /* cerrar al click fuera */
-  document.addEventListener('click', function(e){
-    if(picker.style.display==='none') return;
-    if(!picker.contains(e.target) && e.target!==btn && !btn.contains(e.target)){
-      picker.style.display='none';
-    }
-  });
-
-  picker.addEventListener('click', function(e){ e.stopPropagation(); });
-}
-
 /* ══════════════════════════════════════
    INIT
 ══════════════════════════════════════ */
@@ -198,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function(){
       ['modal-inscripcion-overlay','modal-editar-overlay','modal-entrega-overlay'].forEach(function(id){
         var el=document.getElementById(id); if(el) el.style.display='none';
       });
-      document.querySelectorAll('.date-picker-popup').forEach(function(p){ p.style.display='none'; });
     }
   });
 
@@ -239,7 +78,7 @@ function cargarStats(){
 ══════════════════════════════════════ */
 function cargarInscritos(){
   var tbody=document.getElementById('tbody-inscritos');
-  if(tbody) tbody.innerHTML='<tr><td colspan="15" class="tabla-loading"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
+  if(tbody) tbody.innerHTML='<tr><td colspan="13" class="tabla-loading"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
   fetch('api_dashboard.php?accion=listar_inscritos')
   .then(function(r){ return r.json(); })
   .then(function(data){
@@ -255,7 +94,7 @@ function renderTabla(){
   if(!tbody) return;
 
   if(!inscritosFiltrados.length){
-    tbody.innerHTML='<tr><td colspan="15" class="tabla-vacia"><i class="fa-solid fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;color:var(--border);"></i>Sin resultados</td></tr>';
+    tbody.innerHTML='<tr><td colspan="13" class="tabla-vacia"><i class="fa-solid fa-inbox" style="font-size:24px;display:block;margin-bottom:8px;color:var(--border);"></i>Sin resultados</td></tr>';
     if(lbl) lbl.textContent='0 registros';
     var pag=document.getElementById('paginacion'); if(pag) pag.innerHTML='';
     return;
@@ -273,21 +112,6 @@ function renderTabla(){
       ?'<span class="metodo-efectivo"><i class="fa-solid fa-money-bill"></i> Efectivo</span>'
       :'<span class="metodo-qr"><i class="fa-solid fa-qrcode"></i> QR</span>';
     var fecha=ins.fecha_pago?ins.fecha_pago.substring(0,10):'—';
-
-    var tieneProductos=ins.productos&&ins.productos!==''&&ins.productos!=='—';
-    var prodEnt='<span class="ent-na">—</span>';
-    if(tieneProductos){
-      if(String(ins.producto_entregado)==='1'){
-        var titulo='Entregado por: '+(ins.producto_entregado_por||'—');
-        prodEnt=PUEDE_ENTREGAR
-          ?'<button class="badge-ent badge-ent-si" onclick="abrirEntrega(\'producto\','+ins.inscripcion_id+',0)" title="'+titulo+'"><i class="fa-solid fa-check"></i> Sí</button>'
-          :'<span class="badge-ent badge-ent-si" title="'+titulo+'"><i class="fa-solid fa-check"></i> Sí</span>';
-      } else {
-        prodEnt=PUEDE_ENTREGAR
-          ?'<button class="badge-ent badge-ent-no" onclick="abrirEntrega(\'producto\','+ins.inscripcion_id+',1)"><i class="fa-solid fa-xmark"></i> No</button>'
-          :'<span class="badge-ent badge-ent-no"><i class="fa-solid fa-xmark"></i> No</span>';
-      }
-    }
 
     var matEnt='<span class="ent-na">—</span>';
     if(ins.material_entregado!==null && ins.material_entregado!==undefined){
@@ -308,7 +132,9 @@ function renderTabla(){
       var insJson=encodeURIComponent(JSON.stringify(ins));
       acciones+='<button class="btn-accion btn-ver" onclick="abrirEditar(\''+insJson+'\')" title="Editar"><i class="fa-solid fa-pen"></i></button> ';
     }
-    acciones+='<button class="btn-accion btn-credencial" onclick="descargarCredencial('+ins.id+')" title="Credencial PDF"><i class="fa-solid fa-id-card"></i></button>';
+    if(ins.estado_pago==='confirmado'){
+      acciones+='<button class="btn-accion btn-credencial" onclick="descargarCredencial('+ins.id+')" title="Credencial PDF"><i class="fa-solid fa-id-card"></i></button>';
+    }
     if(typeof ES_ADMIN!=='undefined'&&ES_ADMIN){
       acciones+=' <button class="btn-accion btn-eliminar" onclick="eliminarInscrito('+ins.id+',\''+esc(ins.nombre+' '+ins.apellido)+'\')" title="Eliminar inscrito"><i class="fa-solid fa-trash"></i></button>';
     }
@@ -323,10 +149,8 @@ function renderTabla(){
       '<td>'+esc(ins.iglesia||'—')+'</td>'+
       '<td>'+esc(ins.distrito||'—')+'</td>'+
       '<td>'+esc(ins.paquete||'—')+'</td>'+
-      '<td class="col-productos">'+esc(ins.productos||'—')+'</td>'+
       '<td>'+metodo+'</td>'+
       '<td>'+badge+'</td>'+
-      '<td class="col-entrega">'+prodEnt+'</td>'+
       '<td class="col-entrega">'+matEnt+'</td>'+
       '<td>'+fecha+'</td>'+
       '<td class="col-usuario">'+esc(ins.registro_por||'—')+'</td>'+
@@ -390,7 +214,7 @@ function initModalEntrega(){
   var btnConf=document.getElementById('btn-confirmar-entrega');
   if(btnConf) btnConf.addEventListener('click',function(){
     var fd=new FormData();
-    fd.append('accion',_entregaTipo==='producto'?'marcar_producto_entregado':'marcar_material_entregado');
+    fd.append('accion','marcar_material_entregado');
     fd.append('inscripcion_id',_entregaIns);
     fd.append('entregado',_entregaVal);
     btnConf.disabled=true;
@@ -409,8 +233,7 @@ window.abrirEntrega=function(tipo,inscripcionId,nuevoVal){
   var detalle=document.getElementById('entrega-detalle');
   var txt=document.getElementById('entrega-txt');
   var accion=nuevoVal===1?'marcar como ENTREGADO':'desmarcar (NO entregado)';
-  var item=tipo==='producto'?'los productos':'el material/regalo';
-  txt.textContent='¿Confirmas '+accion+' '+item+' de este inscrito?';
+  txt.textContent='¿Confirmas '+accion+' el material/regalo de este inscrito?';
   detalle.innerHTML='<p style="text-align:center;color:var(--txt-xsoft);font-size:12px;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</p>';
   document.getElementById('modal-entrega-overlay').style.display='grid';
   fetch('api_dashboard.php?accion=detalle_entrega&inscripcion_id='+inscripcionId+'&tipo='+tipo)
@@ -419,12 +242,12 @@ window.abrirEntrega=function(tipo,inscripcionId,nuevoVal){
     if(!data.ok||!data.items||!data.items.length){ detalle.innerHTML=''; return; }
     var html='<div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:4px;">'+
       '<p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--txt-xsoft);margin-bottom:8px;">'+
-        (tipo==='producto'?'Productos a entregar:':'Material a entregar:')+
+        'Material a entregar:'+
       '</p>'+
       data.items.map(function(it){
         var gen=it.genero==='mujer'?'<i class="fa-solid fa-venus" style="color:#e879a0;"></i> Mujer'
           :it.genero==='unisex'?'<i class="fa-solid fa-circle" style="color:#8b5cf6;"></i> Unisex'
-          :it.genero?'<i class="fa-solid fa-mars" style="color:#4f90d4;"></i> Hombre':'';
+          :it.genero?'<i class="fa-solid fa-mars" style="color:#5C625B;"></i> Hombre':'';
         return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">'+
           '<span style="font-weight:600;font-size:13px;">'+esc(it.nombre)+'</span>'+
           '<span style="font-size:12px;color:var(--txt-soft);">x'+it.cantidad+(it.talla?' | <strong>'+esc(it.talla)+'</strong>':'')+(it.genero?' '+gen:'')+'</span>'+
@@ -442,15 +265,6 @@ function initNuevaInscripcion(){
   if(btnAbrir) btnAbrir.addEventListener('click',function(){
     resetModalInscripcion();
     document.getElementById('modal-inscripcion-overlay').style.display='grid';
-    /* inicializar picker al abrir el modal */
-    setTimeout(function(){
-      crearDatePicker('ni-fecha','ni-fecha-display','ni-fecha-btn');
-    },50);
-  });
-
-  var elFecha=document.getElementById('ni-fecha');
-  if(elFecha) elFecha.addEventListener('change',function(){
-    calcularEdad(this.value,'ni-edad');
   });
 
   var elIgl=document.getElementById('ni-iglesia');
@@ -479,14 +293,9 @@ function resetModalInscripcion(){
   ['ni-nombre','ni-apellido','ni-carnet','ni-celular','ni-edad','ni-distrito-nombre','ni-distrito-id'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.value='';
   });
-  var nf=document.getElementById('ni-fecha'); if(nf) nf.value='';
-  var nd=document.getElementById('ni-fecha-display'); if(nd) nd.textContent='';
   var nt=document.getElementById('ni-tipo'); if(nt) nt.value='';
   var ni=document.getElementById('ni-iglesia'); if(ni) ni.value='';
   document.querySelectorAll('input[name="ni-paquete"]').forEach(function(r){ r.checked=false; });
-  document.querySelectorAll('.ni-prod-cant').forEach(function(i){ i.value='0'; });
-  /* resetear displays de ruleta */
-  document.querySelectorAll('.ni-prod-cant-display').forEach(function(d){ d.textContent='0'; });
 }
 
 
@@ -495,7 +304,7 @@ function validarFormInscripcion(){
   var mensajes = [];
 
   /* limpiar bordes anteriores */
-  ['ni-nombre','ni-apellido','ni-carnet','ni-celular'].forEach(function(id){
+  ['ni-nombre','ni-apellido','ni-carnet','ni-edad','ni-celular'].forEach(function(id){
     var el = document.getElementById(id);
     if(el) el.style.borderColor = '';
   });
@@ -547,20 +356,12 @@ function validarFormInscripcion(){
     marcarError('ni-celular'); mensajes.push('El celular debe empezar con 6 o 7'); ok = false;
   }
 
-  /* ── FECHA ── */
-  var fecha = val('ni-fecha');
-  if(!fecha){
-    mensajes.push('Selecciona la fecha de nacimiento'); ok = false;
-  } else {
-    var hoy = new Date(); var nac = new Date(fecha);
-    if(nac >= hoy){ mensajes.push('La fecha no puede ser hoy o en el futuro'); ok = false; }
-    else {
-      var edad = hoy.getFullYear() - nac.getFullYear();
-      var mes  = hoy.getMonth() - nac.getMonth();
-      if(mes < 0 || (mes === 0 && hoy.getDate() < nac.getDate())) edad--;
-      if(edad < 5)  { mensajes.push('La edad mínima es 5 años'); ok = false; }
-      if(edad > 100){ mensajes.push('Verifica el año de nacimiento'); ok = false; }
-    }
+  /* ── EDAD ── */
+  var edad = parseInt(val('ni-edad'), 10);
+  if(!val('ni-edad')){
+    marcarError('ni-edad'); mensajes.push('La edad es obligatoria'); ok = false;
+  } else if(isNaN(edad) || edad < 5 || edad > 100){
+    marcarError('ni-edad'); mensajes.push('Ingresa una edad válida (5 a 100)'); ok = false;
   }
 
   /* ── TIPO ── */
@@ -578,21 +379,6 @@ function validarFormInscripcion(){
     mensajes.push('Selecciona un paquete'); ok = false;
   }
 
-  /* ── PRODUCTOS: si tiene cantidad debe tener talla ── */
-  document.querySelectorAll('.ni-prod-cant').forEach(function(inp){
-    var cant = parseInt(inp.value || 0);
-    if(cant > 0){
-      var tallaEl = document.querySelector('.ni-prod-talla[data-prod-id="'+inp.dataset.prodId+'"]');
-      if(tallaEl && !tallaEl.value){
-        tallaEl.style.borderColor = '#dc2626';
-        mensajes.push('Selecciona una talla para: ' + inp.dataset.nombre);
-        ok = false;
-      } else if(tallaEl){
-        tallaEl.style.borderColor = '';
-      }
-    }
-  });
-
   if(!ok){
     toast(mensajes[0], 'error');
     /* mostrar todos si hay más de uno con un pequeño delay */
@@ -609,26 +395,17 @@ function validarFormInscripcion(){
 
 function mostrarResumenInscripcion(){
   var radio=document.querySelector('input[name="ni-paquete"]:checked');
-  var precioPaq=parseFloat(radio.dataset.precio)||0, total=precioPaq, prodRows='';
-  document.querySelectorAll('.ni-prod-cant').forEach(function(inp){
-    var cant=parseInt(inp.value)||0;
-    if(cant>0){
-      var tallaEl=document.querySelector('.ni-prod-talla[data-prod-id="'+inp.dataset.prodId+'"]');
-      var sub=cant*(parseFloat(inp.dataset.precio)||0);
-      total+=sub;
-      prodRows+=fila(esc(inp.dataset.nombre),cant+'x — Bs. '+sub.toFixed(2)+(tallaEl&&tallaEl.value?' | '+esc(tallaEl.value):''));
-    }
-  });
+  var precioPaq=parseFloat(radio.dataset.precio)||0, total=precioPaq;
   var iglSel=document.getElementById('ni-iglesia');
   var iglNombre=iglSel&&iglSel.selectedIndex>=0?iglSel.options[iglSel.selectedIndex].text:'—';
   var html='<div style="font-size:13px;">'+
     fila('Nombre',esc(val('ni-nombre')+' '+val('ni-apellido')))+
     fila('Carnet',esc(val('ni-carnet')))+
+    fila('Edad',esc(val('ni-edad'))+' años')+
     fila('Celular',esc(val('ni-celular')))+
     fila('Iglesia',esc(iglNombre))+
     fila('Paquete',esc(radio.dataset.nombre)+' — Bs. '+precioPaq.toFixed(2))+
-    prodRows+
-    '<div style="background:#03045e;color:#fff;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;margin-top:12px;">'+
+    '<div style="background:#2C2668;color:#fff;border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;margin-top:12px;">'+
     '<span style="font-weight:700;">TOTAL A PAGAR</span>'+
     '<strong style="font-size:18px;">Bs. '+total.toFixed(2)+'</strong></div></div>';
   document.getElementById('resumen-contenido').innerHTML=html;
@@ -654,63 +431,42 @@ window.volverDatos=function(){
 
 function confirmarInscripcionEfectivo(){
   var radio=document.querySelector('input[name="ni-paquete"]:checked');
-  var prods=[];
-  document.querySelectorAll('.ni-prod-cant').forEach(function(inp){
-    var cant=parseInt(inp.value)||0;
-    if(cant>0){
-      var tipo=inp.dataset.tipo||'';
-      var tallaEl=document.querySelector('.ni-prod-talla[data-prod-id="'+inp.dataset.prodId+'"]');
-      var genEl=document.querySelector('.ni-prod-genero[data-prod-id="'+inp.dataset.prodId+'"]');
-      prods.push({
-        id:inp.dataset.prodId, cantidad:cant,
-        talla:tallaEl?tallaEl.value:'',
-        genero:tipo==='gorra'?'unisex':(genEl?genEl.value:'hombre')
-      });
-    }
-  });
   var fd=new FormData();
   fd.append('accion','registrar_efectivo');
   fd.append('nombre',val('ni-nombre')); fd.append('apellido',val('ni-apellido'));
-  fd.append('carnet',val('ni-carnet')); fd.append('fecha_nacimiento',val('ni-fecha'));
+  fd.append('carnet',val('ni-carnet'));
   fd.append('edad',val('ni-edad')); fd.append('celular',val('ni-celular'));
   fd.append('tipo_inscrito_id',val('ni-tipo')); fd.append('iglesia_id',val('ni-iglesia'));
   fd.append('distrito_id',val('ni-distrito-id')); fd.append('paquete_id',radio.value);
-  fd.append('productos_json',JSON.stringify(prods));
   var btnConf=document.getElementById('btn-ni-confirmar');
   btnConf.disabled=true; btnConf.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Registrando...';
   fetch('api_dashboard.php',{method:'POST',body:fd})
   .then(function(r){ return r.json(); })
   .then(function(data){
-    btnConf.disabled=false; btnConf.innerHTML='<i class="fa-solid fa-check"></i> Registrar y Confirmar';
+    btnConf.disabled=false; btnConf.innerHTML='<i class="fa-solid fa-check"></i> Registrar Inscripción';
     if(data.ok){
       window.cerrarModalInscripcion();
-      toast('Inscripcion registrada y confirmada','ok');
+      toast('Inscripción registrada. Queda pendiente hasta que tesorería confirme el pago.','ok');
       cargarInscritos(); cargarStats();
-      if(data.credencial) window.open('../credenciales/'+data.credencial,'_blank');
     } else toast(data.msg,'error');
   }).catch(function(){ toast('Error de conexion','error'); btnConf.disabled=false; });
 }
 
 window.cerrarModalInscripcion=function(){
   document.getElementById('modal-inscripcion-overlay').style.display='none';
-  document.querySelectorAll('.date-picker-popup').forEach(function(p){ p.style.display='none'; });
 };
 
 /* ══════════════════════════════════════
    EDITAR INSCRITO
 ══════════════════════════════════════ */
 function initEditarInscrito(){
-  var editFecha=document.getElementById('edit-fecha');
-  if(editFecha) editFecha.addEventListener('change',function(){
-    calcularEdad(this.value,'edit-edad');
-  });
   var btnG=document.getElementById('btn-guardar-editar');
   if(btnG) btnG.addEventListener('click',function(){
     var fd=new FormData();
     fd.append('accion','editar_inscrito');
     fd.append('id',val('edit-inscrito-id'));
     fd.append('nombre',val('edit-nombre')); fd.append('apellido',val('edit-apellido'));
-    fd.append('carnet',val('edit-carnet')); fd.append('fecha_nacimiento',val('edit-fecha'));
+    fd.append('carnet',val('edit-carnet'));
     fd.append('edad',val('edit-edad')); fd.append('celular',val('edit-celular'));
     fetch('api_dashboard.php',{method:'POST',body:fd})
     .then(function(r){ return r.json(); })
@@ -727,24 +483,13 @@ window.abrirEditar=function(json){
   document.getElementById('edit-nombre').value=ins.nombre;
   document.getElementById('edit-apellido').value=ins.apellido;
   document.getElementById('edit-carnet').value=ins.carnet;
-  document.getElementById('edit-fecha').value=ins.fecha_nacimiento||'';
-  var dd=document.getElementById('edit-fecha-display');
-  if(dd && ins.fecha_nacimiento){
-    var p=ins.fecha_nacimiento.split('-');
-    if(p.length===3) dd.textContent=p[2]+'/'+p[1]+'/'+p[0];
-  }
   document.getElementById('edit-edad').value=ins.edad||'';
   document.getElementById('edit-celular').value=ins.celular||'';
   document.getElementById('modal-editar-overlay').style.display='grid';
-  /* inicializar picker del editar */
-  setTimeout(function(){
-    crearDatePicker('edit-fecha','edit-fecha-display','edit-fecha-btn');
-  },50);
 };
 
 window.cerrarModalEditar=function(){
   document.getElementById('modal-editar-overlay').style.display='none';
-  document.querySelectorAll('.date-picker-popup').forEach(function(p){ p.style.display='none'; });
 };
 
 /* ══════════════════════════════════════
@@ -871,25 +616,21 @@ function generarPDFTabla(btn){
     var doc = new window.jspdf.jsPDF({ orientation:'landscape', unit:'mm', format:'a4' });
 
     /* ── cabecera ── */
-    doc.setFillColor(3, 4, 94);
+    doc.setFillColor(44, 38, 104);
     doc.rect(0, 0, 297, 18, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(11);
     doc.setFont('helvetica','bold');
-    doc.text('Inscritos — Encuentro Departamental de Jóvenes 2026', 10, 7);
+    doc.text('Inscritos — Cumbre Departamental de Jóvenes 2026', 10, 7);
     doc.setFontSize(8);
     doc.setFont('helvetica','normal');
-    doc.text('IDDP Oruro · Tarija, julio 2026', 10, 13);
+    doc.text('IDDP Oruro · Oruro, noviembre 2026', 10, 13);
     var fecha = new Date().toLocaleString('es-BO');
     doc.text('Generado: ' + fecha + '   Total: ' + inscritosFiltrados.length + ' registros', 287, 13, { align:'right' });
     doc.setTextColor(0, 0, 0);
 
     /* ── filas ── */
     var body = inscritosFiltrados.map(function(ins, i){
-      var prodEnt = '—';
-      if(ins.productos && ins.productos !== '' && ins.productos !== '—'){
-        prodEnt = String(ins.producto_entregado) === '1' ? '✓' : '✗';
-      }
       var matEnt = '—';
       if(ins.material_entregado !== null && ins.material_entregado !== undefined){
         matEnt = String(ins.material_entregado) === '1' ? '✓' : '✗';
@@ -904,7 +645,6 @@ function generarPDFTabla(btn){
         ins.paquete  || '—',
         ins.metodo_pago  || '—',
         ins.estado_pago  || '—',
-        prodEnt,
         matEnt,
         ins.fecha_pago ? ins.fecha_pago.substring(0,10) : '—'
       ];
@@ -916,7 +656,7 @@ function generarPDFTabla(btn){
       head: [[
         '#','Nombre Completo','Carnet','Celular',
         'Iglesia','Distrito','Paquete',
-        'Método','Estado','Prod.','Mat.','Fecha'
+        'Método','Estado','Mat.','Fecha'
       ]],
       body: body,
       styles: {
@@ -926,13 +666,13 @@ function generarPDFTabla(btn){
         valign: 'middle'
       },
       headStyles: {
-        fillColor: [3, 4, 94],
+        fillColor: [44, 38, 104],
         textColor: 255,
         fontStyle: 'bold',
         fontSize: 8
       },
       alternateRowStyles: {
-        fillColor: [240, 242, 248]
+        fillColor: [244, 242, 240]
       },
       columnStyles: {
         0:  { cellWidth: 8,  halign:'center' },   /* # */
@@ -944,13 +684,12 @@ function generarPDFTabla(btn){
         6:  { cellWidth: 30 },                     /* Paquete */
         7:  { cellWidth: 16, halign:'center' },    /* Método */
         8:  { cellWidth: 20, halign:'center' },    /* Estado */
-        9:  { cellWidth: 12, halign:'center' },    /* Prod */
-        10: { cellWidth: 12, halign:'center' },    /* Mat */
-        11: { cellWidth: 22, halign:'center' }     /* Fecha */
+        9:  { cellWidth: 12, halign:'center' },    /* Mat */
+        10: { cellWidth: 22, halign:'center' }     /* Fecha */
       },
       didDrawCell: function(data){
         /* colorear ✓ en verde y ✗ en rojo */
-        if(data.section === 'body' && (data.column.index === 9 || data.column.index === 10)){
+        if(data.section === 'body' && data.column.index === 9){
           var val = String(data.cell.raw);
           if(val === '✓') data.cell.styles.textColor = [6, 95, 70];
           if(val === '✗') data.cell.styles.textColor = [220, 0, 43];
@@ -1008,7 +747,7 @@ function animarNum(id,objetivo){
 }
 
 window.eliminarInscrito = function(inscritoId, nombre){
-  if(!confirm('⚠ ELIMINAR INSCRITO\n\n¿Estás seguro de eliminar a "'+nombre+'" del sistema?\n\nEsto eliminará:\n• Su inscripción\n• Sus productos\n• Sus regalos\n• Recuperará los cupos\n\nEsta acción NO se puede deshacer.')) return;
+  if(!confirm('⚠ ELIMINAR INSCRITO\n\n¿Estás seguro de eliminar a "'+nombre+'" del sistema?\n\nEsto eliminará:\n• Su inscripción\n• Sus regalos\n• Recuperará los cupos\n\nEsta acción NO se puede deshacer.')) return;
   if(!confirm('Segunda confirmación requerida.\n\n¿Confirmas eliminar permanentemente a "'+nombre+'"?')) return;
 
   var fd = new FormData();

@@ -100,89 +100,40 @@ switch($accion){
      STATS ENTREGAS
   ══════════════════════════════════════ */
   case 'stats_entregas':
-    $pe = $conn->query("SELECT SUM(producto_entregado=1) ent, SUM(producto_entregado=0) pend FROM inscripcion_productos")->fetch_assoc();
     $me = $conn->query("SELECT SUM(material_entregado=1) ent, SUM(material_entregado=0) pend FROM inscripcion_regalos")->fetch_assoc();
     echo json_encode(['ok'=>true,
-      'prod_entregados'=>intval($pe['ent']),   'prod_pendientes'=>intval($pe['pend']),
       'mat_entregados'=>intval($me['ent']),    'mat_pendientes'=>intval($me['pend'])]);
     break;
 
-  case 'por_talla':
-    $res = $conn->query("
-      SELECT COALESCE(pr.nombre,'—') AS producto, ip.talla, ip.genero,
-             COUNT(*) AS cantidad,
-             SUM(ip.producto_entregado=1) AS entregados
-      FROM inscripcion_productos ip
-      LEFT JOIN productos pr ON pr.id=ip.producto_id
-      GROUP BY ip.producto_id, ip.talla, ip.genero
-      ORDER BY pr.nombre, ip.talla
-    ");
-    $rows=[]; while($r=$res->fetch_assoc()){ $r['cantidad']=intval($r['cantidad']); $r['entregados']=intval($r['entregados']); $rows[]=$r; }
-    echo json_encode(['ok'=>true,'datos'=>$rows]); break;
-
-  case 'por_genero_prod':
-    $res = $conn->query("
-      SELECT COALESCE(pr.nombre,'—') AS producto, ip.genero, COUNT(*) AS total
-      FROM inscripcion_productos ip
-      LEFT JOIN productos pr ON pr.id=ip.producto_id
-      GROUP BY ip.producto_id, ip.genero ORDER BY pr.nombre
-    ");
-    $rows=[]; while($r=$res->fetch_assoc()){ $r['total']=intval($r['total']); $rows[]=$r; }
-    echo json_encode(['ok'=>true,'datos'=>$rows]); break;
-
   case 'tabla_entregas':
-    $tipo   = trim($_GET['tipo']   ?? '');
     $estado = trim($_GET['estado'] ?? '');
-    $rows   = [];
-    if($tipo !== 'material'){
-      $w = '1=1';
-      if($estado==='entregado') $w='ip.producto_entregado=1';
-      if($estado==='pendiente') $w='ip.producto_entregado=0';
-      $res = $conn->query("
-        SELECT CONCAT(i.nombre,' ',i.apellido) AS inscrito,
-               COALESCE(pr.nombre,'—') AS item, 'Producto' AS tipo_item,
-               COALESCE(ip.talla,'') AS talla, COALESCE(ip.genero,'') AS genero,
-               ip.producto_entregado AS entregado,
-               COALESCE(ue.nombre,'—') AS entregado_por
-        FROM inscripcion_productos ip
-        INNER JOIN inscripciones ins ON ins.id=ip.inscripcion_id
-        INNER JOIN inscritos i ON i.id=ins.inscrito_id
-        LEFT JOIN productos pr ON pr.id=ip.producto_id
-        LEFT JOIN usuarios ue ON ue.id=ip.producto_entregado_por
-        WHERE $w ORDER BY i.apellido
-      ");
-      while($r=$res->fetch_assoc()) $rows[]=$r;
-    }
-    if($tipo !== 'producto'){
-      $w='1=1';
-      if($estado==='entregado') $w='ir.material_entregado=1';
-      if($estado==='pendiente') $w='ir.material_entregado=0';
-      $res = $conn->query("
-        SELECT CONCAT(i.nombre,' ',i.apellido) AS inscrito,
-               COALESCE(r.nombre,'—') AS item, 'Material' AS tipo_item,
-               '' AS talla, '' AS genero,
-               ir.material_entregado AS entregado,
-               COALESCE(ue.nombre,'—') AS entregado_por
-        FROM inscripcion_regalos ir
-        INNER JOIN inscripciones ins ON ins.id=ir.inscripcion_id
-        INNER JOIN inscritos i ON i.id=ins.inscrito_id
-        LEFT JOIN regalos r ON r.id=ir.regalo_id
-        LEFT JOIN usuarios ue ON ue.id=ir.material_entregado_por
-        WHERE $w ORDER BY i.apellido
-      ");
-      while($r=$res->fetch_assoc()) $rows[]=$r;
-    }
+    $w = '1=1';
+    if($estado==='entregado') $w='ir.material_entregado=1';
+    if($estado==='pendiente') $w='ir.material_entregado=0';
+    $res = $conn->query("
+      SELECT CONCAT(i.nombre,' ',i.apellido) AS inscrito,
+             COALESCE(r.nombre,'—') AS item, 'Material' AS tipo_item,
+             ir.material_entregado AS entregado,
+             COALESCE(ue.nombre,'—') AS entregado_por
+      FROM inscripcion_regalos ir
+      INNER JOIN inscripciones ins ON ins.id=ir.inscripcion_id
+      INNER JOIN inscritos i ON i.id=ins.inscrito_id
+      LEFT JOIN regalos r ON r.id=ir.regalo_id
+      LEFT JOIN usuarios ue ON ue.id=ir.material_entregado_por
+      WHERE $w ORDER BY i.apellido
+    ");
+    $rows = [];
+    while($r=$res->fetch_assoc()) $rows[]=$r;
     echo json_encode(['ok'=>true,'entregas'=>$rows]); break;
 
   /* ══════════════════════════════════════
-     ECONOMÍA — sin balance, con productos
+     ECONOMÍA — sin balance
   ══════════════════════════════════════ */
   case 'stats_economia':
     $ing  = floatval($conn->query("SELECT COALESCE(SUM(precio_final),0) t FROM inscripciones WHERE estado_pago='confirmado'")->fetch_assoc()['t']);
-    $prod = floatval($conn->query("SELECT COALESCE(SUM(precio_productos),0) t FROM inscripciones WHERE estado_pago='confirmado'")->fetch_assoc()['t']);
     $ofr  = floatval($conn->query("SELECT COALESCE(SUM(monto),0) t FROM ofrendas_amor")->fetch_assoc()['t']);
     $gas  = floatval($conn->query("SELECT COALESCE(SUM(monto),0) t FROM gastos")->fetch_assoc()['t']);
-    echo json_encode(['ok'=>true,'ingresos'=>$ing,'productos'=>$prod,'ofrendas'=>$ofr,'gastos'=>$gas]);
+    echo json_encode(['ok'=>true,'ingresos'=>$ing,'ofrendas'=>$ofr,'gastos'=>$gas]);
     break;
 
   /* por iglesia — recaudado */
@@ -221,27 +172,6 @@ switch($accion){
       FROM inscripciones GROUP BY metodo_pago ORDER BY recaudado DESC
     ");
     $rows=[]; while($r=$res->fetch_assoc()){ $r['total']=intval($r['total']); $r['recaudado']=floatval($r['recaudado']); $rows[]=$r; }
-    echo json_encode(['ok'=>true,'datos'=>$rows]); break;
-
-  /* por producto — dinero recaudado */
-  case 'rec_por_producto':
-    $res = $conn->query("
-      SELECT COALESCE(pr.nombre,'—') AS producto,
-             SUM(ip.cantidad) AS cantidad_total,
-             COALESCE(SUM(pr.precio * ip.cantidad),0) AS total_dinero,
-             SUM(ip.producto_entregado=1) AS entregados
-      FROM inscripcion_productos ip
-      LEFT JOIN productos pr ON pr.id=ip.producto_id
-      INNER JOIN inscripciones ins ON ins.id=ip.inscripcion_id
-      WHERE ins.estado_pago='confirmado'
-      GROUP BY ip.producto_id ORDER BY total_dinero DESC
-    ");
-    $rows=[]; while($r=$res->fetch_assoc()){
-      $r['cantidad_total']=intval($r['cantidad_total']);
-      $r['total_dinero']=floatval($r['total_dinero']);
-      $r['entregados']=intval($r['entregados']);
-      $rows[]=$r;
-    }
     echo json_encode(['ok'=>true,'datos'=>$rows]); break;
 
   /* ══════════════════════════════════════

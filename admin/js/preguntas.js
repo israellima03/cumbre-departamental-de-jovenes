@@ -79,7 +79,7 @@ function renderEventosPreguntas(lista){
         '<span class="toggle-lbl">'+(activo?'Activo':'Inactivo')+'</span>'+
       '</label>';
     var total = e.total_preguntas > 0
-      ? '<span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;">'+e.total_preguntas+' preguntas</span>'
+      ? '<span style="background:#E7E2DF;color:#652C2A;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;">'+e.total_preguntas+' preguntas</span>'
       : '<span style="color:var(--txt-xsoft);font-size:12px;">0</span>';
     var persona = esc(e.expositor || e.grupo || '—');
     return '<tr>'+

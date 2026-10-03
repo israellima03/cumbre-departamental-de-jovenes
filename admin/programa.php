@@ -527,7 +527,7 @@ $puede_editar = puede(['Administrador','Lider departamental']);
   display:inline-block; padding:2px 8px; border-radius:20px;
   font-size:10px; font-weight:700; text-transform:uppercase;
 }
-.tipo-conferencia { background:#dbeafe;color:#1d4ed8; }
+.tipo-conferencia { background:#E7E2DF;color:#652C2A; }
 .tipo-alabanza    { background:#fce7f3;color:#9d174d; }
 .tipo-receso      { background:#fef9c3;color:#713f12; }
 .tipo-actividad   { background:#d1fae5;color:#065f46; }
@@ -570,24 +570,6 @@ textarea.input-filtro { padding:10px 12px; font-family:var(--font-body); }
   }
   .prog-tab i { display: none; }
 
-  /* ocultar columnas menos importantes en tablas */
-
-  /* expositores */
-  #tbody-expositores tr td:nth-child(5),
-  #panel-expositores thead th:nth-child(5) { display: none; } /* descripción */
-
-  /* eventos */
-  #tbody-eventos tr td:nth-child(8),
-  #panel-eventos thead th:nth-child(8),
-  #tbody-eventos tr td:nth-child(9),
-  #panel-eventos thead th:nth-child(9),
-  #tbody-eventos tr td:nth-child(10),
-  #panel-eventos thead th:nth-child(10) { display: none; } /* moderador, grupo, preguntas */
-
-  /* material */
-  #tbody-material tr td:nth-child(3),
-  #panel-material thead th:nth-child(3) { display: none; } /* evento */
-
   /* modales ancho completo */
   .modal {
     max-width: 100% !important;
@@ -616,18 +598,6 @@ textarea.input-filtro { padding:10px 12px; font-family:var(--font-body); }
     width: 100%;
     min-width: unset;
   }
-
-  /* ocultar más columnas en móvil pequeño */
-
-  /* expositores — solo nombre y rango */
-  #tbody-expositores tr td:nth-child(2),
-  #panel-expositores thead th:nth-child(2) { display: none; } /* foto */
-
-  /* eventos — solo día, hora, tipo */
-  #tbody-eventos tr td:nth-child(6),
-  #panel-eventos thead th:nth-child(6),
-  #tbody-eventos tr td:nth-child(7),
-  #panel-eventos thead th:nth-child(7) { display: none; } /* expositor, tema */
 
   /* texto de tabs más corto */
   .prog-tab { padding: 7px 10px; font-size: 11px; }

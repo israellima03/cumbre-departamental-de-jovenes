@@ -148,20 +148,16 @@
   }
 
   /* ========================================================
-     CASCADA: Distrito → Iglesia → Ministerio
+     CASCADA: Distrito → Iglesia
      ======================================================== */
   function initCascada() {
-    const selDistrito   = document.getElementById('distrito_id');
-    const selIglesia    = document.getElementById('iglesia_id');
-    const selMinisterio = document.getElementById('ministerio_id');
+    const selDistrito = document.getElementById('distrito_id');
+    const selIglesia  = document.getElementById('iglesia_id');
 
     if (!selDistrito || !selIglesia) return;
 
     // Guardar las opciones originales
-    const todasIglesias    = Array.from(selIglesia.options).slice(1); // sin el "Seleccionar"
-    const todosMinisterios = selMinisterio
-      ? Array.from(selMinisterio.options).slice(1)
-      : [];
+    const todasIglesias = Array.from(selIglesia.options).slice(1); // sin el "Seleccionar"
 
     selDistrito.addEventListener('change', function () {
       const distId = this.value;
@@ -171,28 +167,6 @@
       todasIglesias.forEach(function (opt) {
         if (!distId || opt.dataset.distrito === distId) {
           selIglesia.appendChild(opt.cloneNode(true));
-        }
-      });
-
-      // Limpiar ministerios
-      if (selMinisterio) {
-        selMinisterio.innerHTML = '<option value="">Seleccionar Ministerio</option>';
-        todosMinisterios.forEach(function (opt) {
-          selMinisterio.appendChild(opt.cloneNode(true));
-        });
-      }
-    });
-
-    selIglesia.addEventListener('change', function () {
-      const iglId = this.value;
-
-      if (!selMinisterio) return;
-
-      // Filtrar ministerios por iglesia
-      selMinisterio.innerHTML = '<option value="">Seleccionar Ministerio</option>';
-      todosMinisterios.forEach(function (opt) {
-        if (!iglId || opt.dataset.iglesia === iglId) {
-          selMinisterio.appendChild(opt.cloneNode(true));
         }
       });
     });

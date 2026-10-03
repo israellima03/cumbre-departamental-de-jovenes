@@ -20,7 +20,7 @@ $puede_gestionar = puede(['Administrador','Lider departamental','tesorera']);
 
   <div class="page-header">
     <div>
-      <h1 class="page-title">Comisiones <span>del Encuentro</span></h1>
+      <h1 class="page-title">Comisiones <span>de la Cumbre</span></h1>
       <p class="page-sub">Gestiona las comisiones y sus encargados.</p>
     </div>
     <button class="btn-primary" id="btn-nueva-comision">

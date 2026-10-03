@@ -120,7 +120,7 @@ function renderExpositores(lista){
       '<td>'+(i+1)+'</td>'+
       '<td>'+foto+'</td>'+
       '<td style="font-weight:600;">'+esc(e.nombre)+' '+esc(e.apellido)+'</td>'+
-      '<td><span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;">'+esc(e.rango)+'</span></td>'+
+      '<td><span style="background:#E7E2DF;color:#0369a1;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:700;">'+esc(e.rango)+'</span></td>'+
       '<td style="max-width:200px;white-space:normal;font-size:12px;color:var(--txt-soft);">'+esc(e.descripcion||'—')+'</td>'+
       acciones+
     '</tr>';

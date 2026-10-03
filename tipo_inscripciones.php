@@ -30,7 +30,7 @@ if($res) while($r = $res->fetch_assoc()) $lideres_dep[] = $r;
   <h2>Tipo de Inscripción</h2>
 
   <p class="subtitulo-inscripcion">
-    Elige cómo deseas realizar tu inscripción al Encuentro Departamental
+    Elige cómo deseas realizar tu inscripción a la Cumbre Departamental de Jóvenes
   </p>
 
   <div class="grid-inscripcion">
@@ -82,7 +82,7 @@ if($res) while($r = $res->fetch_assoc()) $lideres_dep[] = $r;
               <span class="lider-zona"><?php echo htmlspecialchars($l['distrito'] ?? 'Sin distrito'); ?></span>
             </div>
             <?php if(!empty($l['telefono'])): ?>
-            <a href="https://wa.me/591<?php echo preg_replace('/\D/','',$l['telefono']); ?>?text=Hola%2C+quiero+información+sobre+el+encuentro"
+            <a href="https://wa.me/591<?php echo preg_replace('/\D/','',$l['telefono']); ?>?text=Hola%2C+quiero+información+sobre+la+cumbre"
                target="_blank" class="boton-whatsapp">
               <i class="fa-brands fa-whatsapp"></i> <?php echo htmlspecialchars($l['telefono']); ?>
             </a>
@@ -109,7 +109,7 @@ if($res) while($r = $res->fetch_assoc()) $lideres_dep[] = $r;
               <span class="lider-zona">Lider Departamental</span>
             </div>
             <?php if(!empty($l['telefono'])): ?>
-            <a href="https://wa.me/591<?php echo preg_replace('/\D/','',$l['telefono']); ?>?text=Hola%2C+quiero+información+sobre+el+encuentro"
+            <a href="https://wa.me/591<?php echo preg_replace('/\D/','',$l['telefono']); ?>?text=Hola%2C+quiero+información+sobre+la+cumbre"
                target="_blank" class="boton-whatsapp">
               <i class="fa-brands fa-whatsapp"></i> <?php echo htmlspecialchars($l['telefono']); ?>
             </a>

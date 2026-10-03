@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function(){
     ['nav-inscripciones-toggle',  'submenu-inscripciones'],
     ['nav-programa-toggle',       'submenu-programa'],
     ['nav-preguntas-toggle',      'submenu-preguntas'],
-    ['nav-concursos-toggle',      'submenu-concursos'],
     ['nav-administradores-toggle','submenu-administradores'],
   ].forEach(function(par){
     var toggle  = document.getElementById(par[0]);

@@ -53,7 +53,7 @@ console.log("JS FUNCIONANDO");
         /* crear overlay una sola vez */
         var overlay = document.createElement('div');
         overlay.id = 'menu-overlay';
-        overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,5,30,0.5);z-index:9997;';
+        overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(44,38,104,0.5);z-index:9997;';
         document.body.appendChild(overlay);
 
         function cerrarMenu(){
@@ -100,83 +100,6 @@ console.log("JS FUNCIONANDO");
       });
     }
         
-      /* ── BOTONES +/− PRODUCTOS ── */
-      document.querySelectorAll('.btn-cant').forEach(function(btn){
-        btn.addEventListener('click', function(){
-          var id  = this.dataset.id;
-          var inp = document.querySelector('.input-cantidad[data-id="'+id+'"]');
-          if(!inp) return;
-          var val = parseInt(inp.value) || 0;
-          var max = parseInt(inp.max) || 999;
-          if(this.dataset.accion === 'mas'){
-            if(val < max) inp.value = val + 1;
-          } else {
-            if(val > 0) inp.value = val - 1;
-          }
-          inp.dispatchEvent(new Event('input'));
-        });
-      });
-
-      /* ── COMBOBOX FECHA NACIMIENTO ── */
-      function actualizarFechaNacimiento(){
-        var d = document.getElementById('fn-dia');
-        var m = document.getElementById('fn-mes');
-        var y = document.getElementById('fn-anio');
-        var fn = document.getElementById('fecha_nacimiento');
-        if(!d||!m||!y||!fn) return;
-        if(d.value && m.value && y.value){
-          fn.value = y.value + '-' + m.value + '-' + d.value;
-          fn.dispatchEvent(new Event('change'));
-        } else {
-          fn.value = '';
-        }
-      }
-
-      ['fn-dia','fn-mes','fn-anio'].forEach(function(id){
-        var el = document.getElementById(id);
-        if(el) el.addEventListener('change', actualizarFechaNacimiento);
-      });
-
-
-      /* CUENTA REGRESIVA */
-      /* CUENTA REGRESIVA */
-      if (document.querySelector('.cuenta-regresiva')) {
-        var fechaEvento      = new Date('2026-07-10T14:00:00');
-        var elementoDias     = document.getElementById('dias');
-        var elementoHoras    = document.getElementById('horas');
-        var elementoMinutos  = document.getElementById('minutos');
-        var elementoSegundos = document.getElementById('segundos');
-        var intervaloContador;
-
-        function actualizarContador() {
-          var ahora      = new Date();
-          var diferencia = fechaEvento - ahora;
-
-          if (diferencia <= 0) {
-            clearInterval(intervaloContador);
-            var ul = document.querySelector('.cuenta-regresiva ul');
-            if(ul){
-              ul.innerHTML =
-                '<li style="grid-column:1/-1;text-align:center;color:#fff;font-family:\'Oswald\',sans-serif;'+
-                'font-size:1.8em;font-weight:700;letter-spacing:2px;text-transform:uppercase;'+
-                'text-shadow:0 0 10px rgba(254,135,93,0.9),0 0 30px rgba(218,0,43,0.6);">'+
-                '<i class="fa-solid fa-fire" style="color:#fe875d;margin-right:10px;"></i>'+
-                '¡El Encuentro ha comenzado!'+
-                '</li>';
-            }
-            return;
-          }
-
-          if (elementoDias)     elementoDias.textContent     = Math.floor(diferencia / (1000 * 60 * 60 * 24));
-          if (elementoHoras)    elementoHoras.textContent    = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          if (elementoMinutos)  elementoMinutos.textContent  = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
-          if (elementoSegundos) elementoSegundos.textContent = Math.floor((diferencia % (1000 * 60)) / 1000);
-        }
-
-        actualizarContador();
-        intervaloContador = setInterval(actualizarContador, 1000);
-      }
-
       /* PROGRAMA POR DIA */
       var menuPrograma = document.querySelector('.menu-programa');
       if (menuPrograma) {
@@ -213,7 +136,7 @@ console.log("JS FUNCIONANDO");
         var busqueda  = document.getElementById('buscar-inscrito').value.trim();
         var resultado = document.getElementById('resultado-busqueda');
         var btn       = document.getElementById('btn-buscar');
-        if (!busqueda) { resultado.innerHTML = '<p style="color:#da002b;text-align:center;">Ingresa tu carnet o celular</p>'; return; }
+        if (!busqueda) { resultado.innerHTML = '<p style="color:#E8750A;text-align:center;">Ingresa tu carnet o celular</p>'; return; }
         btn.disabled  = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando...';
         var fd = new FormData();
@@ -238,7 +161,7 @@ console.log("JS FUNCIONANDO");
               '<p>Estado: ' + est + '</p>' +
               (d.estado_pago === 'pendiente'
                 ? '<p class="aviso-pendiente-msg">Tu comprobante esta siendo revisado por la tesorera.</p>'
-                : '<p class="aviso-confirmado-msg">Tu inscripcion esta confirmada. Nos vemos en el encuentro!</p>') +
+                : '<p class="aviso-confirmado-msg">Tu inscripcion esta confirmada. Nos vemos en la cumbre!</p>') +
               '</div>';
 
             /* mostrar botón credencial si está confirmado */
@@ -261,25 +184,13 @@ console.log("JS FUNCIONANDO");
         .catch(function () {
           btn.disabled  = false;
           btn.innerHTML = '<i class="fa-solid fa-search"></i> Consultar Estado';
-          resultado.innerHTML = '<p style="color:#da002b;text-align:center;">Error de conexion.</p>';
+          resultado.innerHTML = '<p style="color:#E8750A;text-align:center;">Error de conexion.</p>';
         });
       }
 
       /* REGISTRO */
       var formReg = document.getElementById('form-registro');
       if (!formReg) return;
-
-      var elFecha = document.getElementById('fecha_nacimiento');
-      if (elFecha) {
-        elFecha.addEventListener('change', function () {
-          var hoy = new Date(); var nac = new Date(this.value);
-          var e = hoy.getFullYear() - nac.getFullYear();
-          var m = hoy.getMonth() - nac.getMonth();
-          if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) e--;
-          document.getElementById('edad').value = e > 0 ? e : '';
-          revisarCompleto();
-        });
-      }
 
       var elIglesia = document.getElementById('iglesia_id');
       if (elIglesia) {
@@ -294,128 +205,7 @@ console.log("JS FUNCIONANDO");
         });
       }
 
-      document.querySelectorAll('.input-cantidad').forEach(function (inp) {
-        inp.addEventListener('input', function () {
-          var card  = this.closest('.card-producto');
-          var talla = card.querySelector('.producto-talla');
-          if (talla) talla.style.display = parseInt(this.value) > 0 ? 'block' : 'none';
-          if(parseInt(this.value) > 0){
-            var pid    = this.dataset.id;
-            var selT   = card.querySelector('.select-talla');
-            var tipo   = selT ? (selT.dataset.tipo || '') : '';
-            var selGen = card.querySelector('.radio-genero:checked');
-            var genero = selGen ? selGen.value : 'hombre';
-            cargarMedidas(card, pid, genero, tipo);
-          }
-          revisarCompleto();
-        });
-      });
-
-      document.querySelectorAll('.radio-genero').forEach(function(radio){
-        radio.addEventListener('change', function(){
-          var card = this.closest('.card-producto');
-          var inp  = card.querySelector('.input-cantidad');
-          var selT = card.querySelector('.select-talla');
-          var pid  = inp ? inp.dataset.id : '';
-          var tipo = selT ? (selT.dataset.tipo || '').toLowerCase().trim() : '';
-          if(tipo === 'gorra') return;
-          cargarMedidas(card, pid, this.value, tipo);
-        });
-      });
-
-      function cargarMedidas(card, pid, genero, tipo){
-        var wrapMedidas = card.querySelector('.tabla-medidas-wrap');
-        var tbody       = card.querySelector('.tbody-medidas');
-        var selTalla    = card.querySelector('.select-talla');
-        if(!wrapMedidas || !tbody) return;
-        var esGorra = tipo && tipo.toLowerCase().trim() === 'gorra';
-        var generoConsulta = esGorra ? 'unisex' : genero;
-        var fd2 = new FormData();
-        fd2.append('accion',      'listar_tallas_publico');
-        fd2.append('producto_id', pid);
-        fd2.append('genero',      generoConsulta);
-        fetch('guardar_inscripcion.php', { method: 'POST', body: fd2 })
-        .then(function(r){ return r.json(); })
-        .then(function(data){
-          if(data.ok && data.tallas && data.tallas.length){
-            var valorActual = selTalla ? selTalla.value : '';
-            if(selTalla){
-              selTalla.innerHTML = '<option value="">-- Talla --</option>' +
-                data.tallas.map(function(t){
-                  return '<option value="'+t.talla+'"'+(t.talla===valorActual?' selected':'')+'>'+t.talla+'</option>';
-                }).join('');
-            }
-            if(esGorra){
-              wrapMedidas.style.display = 'none';
-            } else {
-              tbody.innerHTML = data.tallas.map(function(t){
-                return '<tr><td>'+t.talla+'</td><td>'+t.ancho_cm+' cm</td><td>'+t.alto_cm+' cm</td></tr>';
-              }).join('');
-              wrapMedidas.style.display = 'block';
-              resaltarTalla(card, selTalla ? selTalla.value : '');
-            }
-          } else {
-            mostrarMedidasDefault(card, genero, tipo, selTalla);
-          }
-        })
-        .catch(function(){ mostrarMedidasDefault(card, genero, tipo, selTalla); });
-      }
-
-      function mostrarMedidasDefault(card, genero, tipo, selTalla){
-        var wrapMedidas = card.querySelector('.tabla-medidas-wrap');
-        var tbody       = card.querySelector('.tbody-medidas');
-        if(!wrapMedidas || !tbody) return;
-        var medidasHombre = [
-          {t:'XS',a:50,h:69},{t:'S',a:52,h:72},{t:'M',a:54,h:75},
-          {t:'L',a:56,h:78},{t:'XL',a:58,h:81},{t:'XXL',a:60,h:84},{t:'XXXL',a:62,h:87}
-        ];
-        var medidasMujer = [
-          {t:'XS',a:48,h:61},{t:'S',a:50,h:64},{t:'M',a:52,h:67},
-          {t:'L',a:54,h:70},{t:'XL',a:56,h:73},{t:'XXL',a:58,h:76},{t:'XXXL',a:60,h:79}
-        ];
-        var esGorra = tipo && tipo.toLowerCase() === 'gorra';
-        if(esGorra){
-          if(selTalla){
-            selTalla.innerHTML = '<option value="">-- Talla --</option>' +
-              ['Pequeño','Mediano','Grande','Extra Grande'].map(function(t){
-                return '<option value="'+t+'">'+t+'</option>';
-              }).join('');
-          }
-          wrapMedidas.style.display = 'none';
-        } else {
-          var medidas = genero === 'mujer' ? medidasMujer : medidasHombre;
-          tbody.innerHTML = medidas.map(function(m){
-            return '<tr><td>'+m.t+'</td><td>'+m.a+' cm</td><td>'+m.h+' cm</td></tr>';
-          }).join('');
-          if(selTalla){
-            var valorActual = selTalla.value;
-            selTalla.innerHTML = '<option value="">-- Talla --</option>' +
-              medidas.map(function(m){
-                return '<option value="'+m.t+'"'+(m.t===valorActual?' selected':'')+'>'+m.t+'</option>';
-              }).join('');
-          }
-          wrapMedidas.style.display = 'block';
-        }
-        resaltarTalla(card, selTalla ? selTalla.value : '');
-      }
-
-      function resaltarTalla(card, tallaSeleccionada){
-        var filas = card.querySelectorAll('.tbody-medidas tr');
-        filas.forEach(function(fila){
-          var celdaTalla = fila.querySelector('td:first-child');
-          if(celdaTalla && celdaTalla.textContent.trim() === tallaSeleccionada){
-            fila.style.background = '#03045e';
-            fila.style.color      = '#fff';
-            fila.style.fontWeight = 'bold';
-          } else {
-            fila.style.background = '';
-            fila.style.color      = '';
-            fila.style.fontWeight = '';
-          }
-        });
-      }
-
-      var camposRequeridos = ['nombre','apellido','carnet','celular','iglesia_id','tipo_inscrito_id'];
+      var camposRequeridos = ['nombre','apellido','carnet','edad','celular','iglesia_id','tipo_inscrito_id'];
       camposRequeridos.forEach(function (id) {
         var el = document.getElementById(id);
         if (el) { el.addEventListener('input', revisarCompleto); el.addEventListener('change', revisarCompleto); }
@@ -430,8 +220,6 @@ console.log("JS FUNCIONANDO");
           var el = document.getElementById(id);
           if (!el || el.value.trim() === '') ok = false;
         });
-        var f = document.getElementById('fecha_nacimiento');
-        if (!f || f.value === '') ok = false;
         if (!document.querySelector('input[name="paquete"]:checked')) ok = false;
         var btn  = document.getElementById('btn-calcular');
         var hint = document.getElementById('hint-calcular');
@@ -475,7 +263,6 @@ console.log("JS FUNCIONANDO");
         var nombre    = document.getElementById('nombre').value.trim();
         var apellido  = document.getElementById('apellido').value.trim();
         var carnet    = document.getElementById('carnet').value.trim();
-        var fecha     = document.getElementById('fecha_nacimiento').value;
         var edad      = document.getElementById('edad').value;
         var celular   = document.getElementById('celular').value.trim();
         var elTipo    = document.getElementById('tipo_inscrito_id');
@@ -488,7 +275,6 @@ console.log("JS FUNCIONANDO");
 
         setText('res-nombre-completo', nombre + ' ' + apellido);
         setText('res-carnet',         carnet);
-        setText('res-fecha',          formatearFecha(fecha));
         setText('res-edad',           edad ? edad + ' años' : '—');
         setText('res-celular',        celular);
         setText('res-tipo',           tipoTx);
@@ -497,26 +283,6 @@ console.log("JS FUNCIONANDO");
         setText('res-paquete',        radio.dataset.nombre);
         setText('res-precio-paquete', 'Bs. ' + precioPaq.toFixed(2));
 
-        var tablaProds = document.getElementById('res-productos-tabla');
-        var wrapProds  = document.getElementById('res-productos-wrap');
-        tablaProds.innerHTML = '';
-        var hayProductos = false;
-        document.querySelectorAll('.input-cantidad').forEach(function (inp) {
-          var cant = parseInt(inp.value) || 0;
-          if (cant > 0) {
-            hayProductos = true;
-            var card  = inp.closest('.card-producto');
-            var talla = card.querySelector('.select-talla');
-            var sub   = cant * (parseFloat(inp.dataset.precio) || 0);
-            total += sub;
-            var tr = document.createElement('tr');
-            tr.innerHTML = '<td class="lbl">' + inp.dataset.nombre + '</td><td>' + cant + 'x' +
-              (talla && talla.value ? ' <em>Talla: ' + talla.value + '</em>' : '') +
-              ' — Bs. ' + sub.toFixed(2) + '</td>';
-            tablaProds.appendChild(tr);
-          }
-        });
-        wrapProds.style.display = hayProductos ? 'block' : 'none';
         setText('res-total', 'Bs. ' + total.toFixed(2));
         formReg.dataset.totalCalculado = total.toFixed(2);
 
@@ -565,13 +331,13 @@ console.log("JS FUNCIONANDO");
         div.style.display = 'block';
         div.innerHTML =
           '<i class="fa-solid fa-triangle-exclamation"></i> ' +
-          '<strong>Ya estas inscrito al encuentro</strong>' +
+          '<strong>Ya estas inscrito a la cumbre</strong>' +
           '<p>Tu carnet o celular ya tiene una inscripcion registrada a nombre de <strong>' + (data.nombre || '') + '</strong>.</p>' +
           '<p>Estado actual: ' + est + '</p>' +
           '<p>Si crees que te equivocaste de datos, puedes volver a corregirlos.</p>' +
           '<p class="aviso-no-continuar">Si los datos son correctos, no puedes inscribirte dos veces.</p>' +
           '<div style="margin-top:15px;text-align:center;">' +
-          '<button type="button" class="button hollow" onclick="cerrarAvisoInscrito()" style="border-color:#03045e;color:#03045e;">' +
+          '<button type="button" class="button hollow" onclick="cerrarAvisoInscrito()" style="border-color:#2C2668;color:#2C2668;">' +
           '<i class="fa-solid fa-arrow-left"></i> Volver a corregir mis datos</button></div>';
         div.scrollIntoView({ behavior: 'smooth' });
       }
@@ -627,39 +393,19 @@ console.log("JS FUNCIONANDO");
         btnReg.addEventListener('click', function () {
           if (!formReg.dataset.comprobante) { mostrarError('err-comprobante', 'Debes subir el comprobante primero'); return; }
           var radio = document.querySelector('input[name="paquete"]:checked');
-          var prods = [];
-          document.querySelectorAll('.input-cantidad').forEach(function (inp) {
-            var cant = parseInt(inp.value) || 0;
-            if (cant > 0) {
-              var card  = inp.closest('.card-producto');
-              var talla = card.querySelector('.select-talla');
-              var tipo  = talla ? (talla.dataset.tipo || '').toLowerCase().trim() : '';
-              var genero = 'hombre';
-              if(tipo === 'gorra'){
-                genero = 'unisex';
-              } else {
-                var radioGen = card.querySelector('.radio-genero:checked');
-                genero = radioGen ? radioGen.value : 'hombre';
-              }
-              prods.push({ id:inp.dataset.id, nombre:inp.dataset.nombre, cantidad:cant, talla:talla?talla.value:'', genero:genero });
-            }
-          });
           var fd = new FormData();
           fd.append('accion',           'registrar');
           fd.append('nombre',           document.getElementById('nombre').value);
           fd.append('apellido',         document.getElementById('apellido').value);
           fd.append('carnet',           document.getElementById('carnet').value);
-          fd.append('fecha_nacimiento', document.getElementById('fecha_nacimiento').value);
           fd.append('edad',             document.getElementById('edad').value);
           fd.append('celular',          document.getElementById('celular').value);
           fd.append('iglesia_id',       document.getElementById('iglesia_id').value);
           fd.append('distrito_id',      document.getElementById('distrito_id').value);
-          fd.append('ministerio_id',    document.getElementById('ministerio_id').value);
           fd.append('tipo_inscrito_id', document.getElementById('tipo_inscrito_id').value);
           fd.append('paquete_id',       radio.value);
           fd.append('regalo_id',        document.getElementById('regalo_id').value);
           fd.append('comprobante_arch', formReg.dataset.comprobante);
-          fd.append('productos_json',   JSON.stringify(prods));
           btnReg.disabled  = true;
           btnReg.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...';
           fetch('guardar_inscripcion.php', { method: 'POST', body: fd })
@@ -698,7 +444,7 @@ console.log("JS FUNCIONANDO");
           '<h3>Inscripcion enviada, ' + nombre + ' ' + apellido + '!</h3>' +
           '<p>Tu registro ha sido recibido con estado <strong>PENDIENTE</strong>.</p>' +
           '<p>La tesorera verificara tu comprobante de pago y confirmara tu inscripcion.</p>' +
-          '<div class="mre-nota"><i class="fa-solid fa-envelope"></i> Se envio un aviso a la tesorera con tu comprobante adjunto.</div>';
+          '<div class="mre-nota"><i class="fa-solid fa-envelope"></i> Se envio un aviso a la tesorera con tu comprobante adjunto. Puedes revisar el estado con tu carnet o celular en el buscador de abajo.</div>';
         if (buscador) {
           buscador.parentNode.insertBefore(mensajeDiv, buscador);
           buscador.style.display = 'block';
@@ -767,45 +513,19 @@ console.log("JS FUNCIONANDO");
           mostrarError('err-tipo', 'Selecciona el tipo de inscrito'); ok = false;
         }
       
-        /* ── FECHA NACIMIENTO ── */
-        var fecha = document.getElementById('fecha_nacimiento');
-        if (!fecha || fecha.value === '') {
-          mostrarError('err-fecha', 'La fecha de nacimiento es obligatoria'); ok = false;
-        } else if (new Date(fecha.value) >= new Date()) {
-          mostrarError('err-fecha', 'La fecha no puede ser hoy o en el futuro'); ok = false;
-        } else {
-          /* edad mínima 5 años, máxima 100 */
-          var hoy = new Date();
-          var nac = new Date(fecha.value);
-          var edad = hoy.getFullYear() - nac.getFullYear();
-          var mes  = hoy.getMonth() - nac.getMonth();
-          if (mes < 0 || (mes === 0 && hoy.getDate() < nac.getDate())) edad--;
-          if (edad < 5) {
-            mostrarError('err-fecha', 'La edad minima es 5 años'); ok = false;
-          } else if (edad > 100) {
-            mostrarError('err-fecha', 'Verifica el año de nacimiento'); ok = false;
-          }
+        /* ── EDAD ── */
+        var edad = document.getElementById('edad');
+        var edadNum = edad ? parseInt(edad.value, 10) : NaN;
+        if (!edad || edad.value.trim() === '') {
+          mostrarError('err-edad', 'La edad es obligatoria'); ok = false;
+        } else if (isNaN(edadNum) || edadNum < 5 || edadNum > 100) {
+          mostrarError('err-edad', 'Ingresa una edad valida (5 a 100)'); ok = false;
         }
-      
+
         /* ── PAQUETE ── */
         if (!document.querySelector('input[name="paquete"]:checked')) {
           mostrarError('err-paquete', 'Debes elegir un paquete'); ok = false;
         }
-      
-        /* ── TALLAS DE PRODUCTOS ── */
-        document.querySelectorAll('.input-cantidad').forEach(function (inp) {
-          var cant = parseInt(inp.value) || 0;
-          if (cant > 0) {
-            var card  = inp.closest('.card-producto');
-            var talla = card.querySelector('.select-talla');
-            var errT  = card.querySelector('.error-talla');
-            if (talla && talla.value === '') {
-              if (errT) { errT.textContent = 'Selecciona una talla para ' + inp.dataset.nombre; errT.style.display = 'block'; }
-              talla.style.borderColor = '#da002b';
-              ok = false;
-            }
-          }
-        });
       
         if (!ok) {
           var primero = document.querySelector('.campo-error[style*="block"]');
@@ -818,15 +538,8 @@ console.log("JS FUNCIONANDO");
       function limpiarError(id)      { var el = document.getElementById(id); if (el) { el.textContent = ''; el.style.display = 'none'; } }
       function limpiarErrores() {
         document.querySelectorAll('.campo-error').forEach(function (el) { el.textContent = ''; el.style.display = 'none'; });
-        document.querySelectorAll('.select-talla').forEach(function (el) { el.style.borderColor = ''; });
       }
       function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val || '—'; }
-      function formatearFecha(f) {
-        if (!f) return '—';
-        var p = f.split('-');
-        return p.length === 3 ? p[2] + '/' + p[1] + '/' + p[0] : f;
-      }
-
       window.cerrarAvisoInscrito = function() {
         var div = document.getElementById('aviso-ya-inscrito');
         if (div) div.style.display = 'none';

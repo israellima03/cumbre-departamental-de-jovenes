@@ -5,17 +5,14 @@ function generarCredencialHTML($conn, $inscrito_id, $inscripcion_id){
     SELECT i.nombre, i.apellido, i.carnet, i.celular, i.edad,
            ins.precio_final, ins.metodo_pago, ins.estado_pago, ins.fecha_pago,
            p.nombre AS paquete, ig.nombre AS iglesia, d.nombre AS distrito,
-           t.nombre AS tipo,
-           GROUP_CONCAT(pr.nombre SEPARATOR ', ') AS productos
+           t.nombre AS tipo
     FROM inscritos i
     INNER JOIN inscripciones ins ON ins.id = $inscripcion_id
     LEFT JOIN paquetes p         ON p.id  = ins.paquete_id
     LEFT JOIN iglesias ig        ON ig.id = i.iglesia_id
     LEFT JOIN distritos d        ON d.id  = i.distrito_id
     LEFT JOIN tipos_inscrito t   ON t.id  = i.tipo_inscrito_id
-    LEFT JOIN inscripcion_productos ip ON ip.inscripcion_id = ins.id
-    LEFT JOIN productos pr       ON pr.id = ip.producto_id
-    WHERE i.id = $inscrito_id GROUP BY ins.id LIMIT 1
+    WHERE i.id = $inscrito_id LIMIT 1
   ")->fetch_assoc();
   if(!$r) return null;
 
@@ -25,8 +22,7 @@ function generarCredencialHTML($conn, $inscrito_id, $inscripcion_id){
   $base_url = 'https://mjoruro.com/ver-credencial.php?code=' . $codigo_qr;
   $qr_url   = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . urlencode($base_url);
 
-  $es_local = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false);
-  $carpeta  = $_SERVER['DOCUMENT_ROOT'] . ($es_local ? '/encuentro-departamental-de-jovenes/credenciales/' : '/credenciales/');
+  $carpeta  = dirname(__DIR__) . '/credenciales/';
   if(!is_dir($carpeta)) mkdir($carpeta, 0755, true);
 
   $slug    = preg_replace('/[^a-z0-9]/','_', strtolower($r['carnet']));
@@ -44,27 +40,27 @@ function generarCredencialHTML($conn, $inscrito_id, $inscripcion_id){
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;background:#f0f2f8;display:flex;flex-direction:column;align-items:center;padding:30px 16px;min-height:100vh;}
+body{font-family:Arial,sans-serif;background:#F4F2F0;display:flex;flex-direction:column;align-items:center;padding:30px 16px;min-height:100vh;}
 .acciones{margin-bottom:18px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 24px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;}
-.btn-pdf{background:#03045e;color:#fff;}.btn-pdf:hover{background:#da002b;}
+.btn-pdf{background:#2C2668;color:#fff;}.btn-pdf:hover{background:#E8750A;}
 .btn-print{background:#10b981;color:#fff;}
 .credencial{width:100%;max-width:420px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.15);}
-.cab{background:#03045e;padding:10px 14px 8px;text-align:center;color:#fff;}
-.avatar{width:44px;height:44px;border-radius:50%;background:#da002b;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700;margin:0 auto 6px;}
+.cab{background:#2C2668;padding:10px 14px 8px;text-align:center;color:#fff;}
+.avatar{width:44px;height:44px;border-radius:50%;background:#E8750A;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700;margin:0 auto 6px;}
 .nombre-txt{font-size:13px;font-weight:700;margin-bottom:2px;}
 .subtitulo{font-size:9px;color:rgba(255,255,255,.6);}
 .body{padding:6px 12px;}
-.row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid #f0f2f8;}
+.row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid #F4F2F0;}
 .row:last-child{border-bottom:none;}
 .lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;}
-.val{font-size:9px;font-weight:600;color:#1a1d2e;text-align:right;max-width:60%;}
+.val{font-size:9px;font-weight:600;color:#2C2668;text-align:right;max-width:60%;}
 .estado-ok{display:inline-block;background:#d1fae5;color:#065f46;border:1px solid #10b981;border-radius:20px;padding:1px 8px;font-size:8px;font-weight:700;}
-.qr-wrap{border-top:1px dashed #e4e8f0;margin:0;padding:6px 12px;text-align:center;background:#f8faff;}
+.qr-wrap{border-top:1px dashed #E7E2DF;margin:0;padding:6px 12px;text-align:center;background:#F4F2F0;}
 .qr-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:4px;}
-.qr-img{width:80px;height:80px;border:2px solid #03045e;border-radius:6px;padding:2px;background:#fff;}
+.qr-img{width:80px;height:80px;border:2px solid #2C2668;border-radius:6px;padding:2px;background:#fff;}
 .qr-code-txt{font-size:7px;color:#9ca3af;margin-top:4px;letter-spacing:.5px;word-break:break-all;}
-.pie{background:#f0f2f8;padding:5px;text-align:center;font-size:8px;color:#9ca3af;}
+.pie{background:#F4F2F0;padding:5px;text-align:center;font-size:8px;color:#9ca3af;}
 @media print{.acciones{display:none;}}
 </style>
 </head><body>
@@ -76,7 +72,7 @@ body{font-family:Arial,sans-serif;background:#f0f2f8;display:flex;flex-direction
   <div class="cab">
     <div class="avatar">' . $iniciales . '</div>
     <div class="nombre-txt">' . htmlspecialchars($r['nombre'].' '.$r['apellido']) . '</div>
-    <div class="subtitulo">Encuentro Departamental de Jóvenes — Tarija 2026</div>
+    <div class="subtitulo">Cumbre Departamental de Jóvenes — Oruro 2026</div>
   </div>
   <div class="body">
     <div class="row"><span class="lbl">Carnet</span><span class="val">' . htmlspecialchars($r['carnet']) . '</span></div>
@@ -86,7 +82,6 @@ body{font-family:Arial,sans-serif;background:#f0f2f8;display:flex;flex-direction
     <div class="row"><span class="lbl">Iglesia</span><span class="val">' . htmlspecialchars($r['iglesia']??'—') . '</span></div>
     <div class="row"><span class="lbl">Distrito</span><span class="val">' . htmlspecialchars($r['distrito']??'—') . '</span></div>
     <div class="row"><span class="lbl">Paquete</span><span class="val">' . htmlspecialchars($r['paquete']??'—') . '</span></div>
-    <div class="row"><span class="lbl">Productos</span><span class="val">' . htmlspecialchars($r['productos']??'—') . '</span></div>
     <div class="row"><span class="lbl">Total pagado</span><span class="val">Bs. ' . number_format(floatval($r['precio_final']),0) . '</span></div>
     <div class="row"><span class="lbl">Método</span><span class="val">' . strtoupper($r['metodo_pago']) . '</span></div>
     <div class="row"><span class="lbl">Estado</span><span class="val"><span class="estado-ok">CONFIRMADO</span></span></div>

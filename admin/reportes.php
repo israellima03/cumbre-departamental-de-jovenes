@@ -19,7 +19,7 @@ $puede_gastos = puede(['Administrador','Lider departamental','tesorera']);
 
   <div class="page-header">
     <div>
-      <h1 class="page-title">Reportes <span>del Encuentro</span></h1>
+      <h1 class="page-title">Reportes <span>de la Cumbre</span></h1>
       <p class="page-sub">Estadísticas, entregas, economía y gastos del evento.</p>
     </div>
   </div>
@@ -121,14 +121,6 @@ $puede_gastos = puede(['Administrador','Lider departamental','tesorera']);
   <!-- ══ TAB ENTREGAS ══ -->
   <div class="rep-panel" id="panel-entregas">
     <div class="rep-stats">
-      <div class="rep-stat-card rep-green">
-        <div class="rep-stat-icon"><i class="fa-solid fa-shirt"></i></div>
-        <div><div class="rep-stat-num" id="re-prod-entregados">—</div><div class="rep-stat-lbl">Productos Entregados</div></div>
-      </div>
-      <div class="rep-stat-card rep-orange">
-        <div class="rep-stat-icon"><i class="fa-solid fa-shirt" style="opacity:.4;"></i></div>
-        <div><div class="rep-stat-num" id="re-prod-pendientes">—</div><div class="rep-stat-lbl">Productos Pendientes</div></div>
-      </div>
       <div class="rep-stat-card rep-blue">
         <div class="rep-stat-icon"><i class="fa-solid fa-gift"></i></div>
         <div><div class="rep-stat-num" id="re-mat-entregados">—</div><div class="rep-stat-lbl">Materiales Entregados</div></div>
@@ -139,30 +131,10 @@ $puede_gastos = puede(['Administrador','Lider departamental','tesorera']);
       </div>
     </div>
 
-    <div class="rep-grid-2">
-      <div class="card">
-        <div class="card-header"><h3><i class="fa-solid fa-shirt"></i> Productos por Talla</h3></div>
-        <div class="tabla-wrap" style="overflow-x:auto;">
-          <table class="tabla-inscritos"><thead><tr><th>Producto</th><th>Talla</th><th>Género</th><th>Cant.</th><th>Entregados</th></tr></thead><tbody id="tb-tallas"></tbody></table>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header"><h3><i class="fa-solid fa-venus-mars"></i> Por Género</h3></div>
-        <div class="tabla-wrap" style="overflow-x:auto;">
-          <table class="tabla-inscritos"><thead><tr><th>Producto</th><th>Género</th><th>Total</th></tr></thead><tbody id="tb-genero-prod"></tbody></table>
-        </div>
-      </div>
-    </div>
-
     <div class="card" style="margin-top:16px;">
       <div class="card-header">
         <h3><i class="fa-solid fa-box-open"></i> Detalle de Entregas</h3>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <select id="rfiltro-entrega-tipo" class="select-filtro" onchange="cargarTablaEntregas()">
-            <option value="">Producto y Material</option>
-            <option value="producto">Solo Producto</option>
-            <option value="material">Solo Material</option>
-          </select>
           <select id="rfiltro-entrega-estado" class="select-filtro" onchange="cargarTablaEntregas()">
             <option value="">Todos</option>
             <option value="entregado">Entregado</option>
@@ -192,10 +164,6 @@ $puede_gastos = puede(['Administrador','Lider departamental','tesorera']);
         <div class="rep-stat-icon"><i class="fa-solid fa-arrow-trend-up"></i></div>
         <div><div class="rep-stat-num" id="ec-ingresos">—</div><div class="rep-stat-lbl">Ingresos Inscritos (Bs.)</div></div>
       </div>
-      <div class="rep-stat-card rep-blue">
-        <div class="rep-stat-icon"><i class="fa-solid fa-shirt"></i></div>
-        <div><div class="rep-stat-num" id="ec-productos">—</div><div class="rep-stat-lbl">Ingresos Productos (Bs.)</div></div>
-      </div>
       <div class="rep-stat-card rep-purple">
         <div class="rep-stat-icon"><i class="fa-solid fa-hand-holding-heart"></i></div>
         <div><div class="rep-stat-num" id="ec-ofrendas">—</div><div class="rep-stat-lbl">Ofrendas de Amor (Bs.)</div></div>
@@ -212,7 +180,6 @@ $puede_gastos = puede(['Administrador','Lider departamental','tesorera']);
       <button class="ec-filtro-btn active" data-vista="iglesia">Iglesia</button>
       <button class="ec-filtro-btn" data-vista="distrito">Distrito</button>
       <button class="ec-filtro-btn" data-vista="metodo">Método de Pago</button>
-      <button class="ec-filtro-btn" data-vista="producto">Productos</button>
     </div>
 
     <!-- Tabla dinámica economía -->
@@ -485,7 +452,6 @@ $puede_gastos = puede(['Administrador','Lider departamental','tesorera']);
   .rep-tabs  { overflow-x:auto; flex-wrap:nowrap; padding:4px; }
   .rep-tab   { flex-shrink:0; padding:9px 12px; font-size:12px; }
   .rep-grid-2 { grid-template-columns:1fr; }
-  .col-hide-md { display:none; }
   .tabla-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
   .page-header { flex-direction:column; align-items:flex-start; }
 }
@@ -495,7 +461,6 @@ $puede_gastos = puede(['Administrador','Lider departamental','tesorera']);
   .rep-stats  { grid-template-columns:1fr 1fr; }
   .rep-grid-4 { grid-template-columns:1fr; }
   .rep-stat-num { font-size:18px; }
-  .col-hide-sm { display:none; }
   .modal-body div[style*="grid-template-columns:1fr 1fr"] {
     display:flex !important; flex-direction:column !important;
   }

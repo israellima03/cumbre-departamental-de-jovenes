@@ -3,9 +3,13 @@ require_once __DIR__.'/../funciones/bd_conexion.php';
 require_once __DIR__.'/../funciones/config_sitio.php';
 $cfg    = get_config($conn);
 $redes  = get_redes($conn);
-$nombre = $cfg['evento_nombre'] ?? 'Encuentro Departamental de Jóvenes';
-$lema   = $cfg['evento_lema']   ?? 'SIN FILTROS';
-$versiculo = $cfg['evento_versiculo'] ?? '1 Samuel 16:7';
+$nombre = $cfg['evento_nombre'] ?? 'Cumbre Departamental de Jóvenes';
+$lema   = $cfg['evento_lema']   ?? 'Llamados a testificar';
+$versiculo = $cfg['evento_versiculo'] ?? '';
+$ciudad = !empty($cfg['evento_ciudad']) ? $cfg['evento_ciudad'] : 'Oruro, Bolivia';
+$fecha_evento = !empty($cfg['evento_fecha']) ? $cfg['evento_fecha'] : '2026-11-06';
+$fecha_ts     = strtotime($fecha_evento);
+$fecha_txt    = $fecha_ts ? date('d/m/Y', $fecha_ts) : $fecha_evento;
 $pagina_actual = basename($_SERVER['PHP_SELF']);
 
 /* cache busting */
@@ -15,24 +19,22 @@ $v = function($archivo){
 };
 ?>
 <!doctype html>
-<html class="no-js" lang="">
+<html class="no-js" lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Encuentro Departamental de Jovenes</title>
-  <meta name="description" content="">
+  <title>Cumbre Departamental de Jóvenes Oruro</title>
+  <meta name="description" content="Cumbre Departamental de Jóvenes Oruro 2026 — Iglesia de Dios de la Profecía. 6 de noviembre en la Ex Terminal de Oruro. Llamados a testificar.">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="manifest" href="site.webmanifest">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="stylesheet" href="css/normalize.css?v=<?php echo $v('css/normalize.css'); ?>">
   <link rel="stylesheet" href="css/main.css?v=<?php echo $v('css/main.css'); ?>">
+  <link rel="stylesheet" href="css/cumbre.css?v=<?php echo $v('css/cumbre.css'); ?>">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-  <meta name="theme-color" content="#fafafa">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Kaushan+Script&family=Pacifico&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#2C2668">
 </head>
 
 <body <?php echo ($pagina_actual !== 'index.php') ? 'class="pagina-interior"' : ''; ?>>
@@ -43,26 +45,30 @@ $v = function($archivo){
   <?php if($pagina_actual === 'index.php'): ?>
     <header class="site-header">
       <div class="hero">
+        <span class="hero-fondo-txt" aria-hidden="true">CUMBRE</span>
         <div class="logos-laterales">
-          <img src="img/escudoidpo.png" class="logo-izq" alt="logo izquierda">
-          <img src="img/escudomjo.png" class="logo-der" alt="logo derecha">
+          <img src="img/escudoidpo.png" class="logo-izq" alt="Iglesia de Dios de la Profecía">
+          <img src="img/escudomjo.png" class="logo-der" alt="Ministerio de Jóvenes Oruro">
         </div>
         <div class="contenido-header">
           <nav class="redes-sociales">
-            <a href="https://www.facebook.com/share/1EG8kSZLUZ/" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="https://www.instagram.com/" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-            <a href="https://www.tiktok.com/@mj.iddp.oruro" target="_blank" title="TikTok"><i class="fa-brands fa-tiktok"></i></a>
-            <a href="https://chat.whatsapp.com/DDCPO9QTnhqFyCJnjwSOUC" target="_blank" title="Grupo WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            <?php foreach($redes as $r): ?>
+              <a href="<?php echo htmlspecialchars($r['url']); ?>" target="_blank" title="<?php echo htmlspecialchars($r['nombre']); ?>">
+                <i class="<?php echo htmlspecialchars($r['icono']); ?>"></i>
+              </a>
+            <?php endforeach; ?>
           </nav>
           <div class="informacion-evento">
             <div class="clearfix">
-              <p class="fecha"><i class="fa-solid fa-calendar"></i>10/07/2026</p>
-              <p class="ciudad"><i class="fa-solid fa-location-dot"></i>Tarija, Bolivia</p>
+              <p class="fecha"><i class="fa-solid fa-calendar"></i><?php echo htmlspecialchars($fecha_txt); ?></p>
+              <p class="ciudad"><i class="fa-solid fa-location-dot"></i><?php echo htmlspecialchars($ciudad); ?></p>
             </div>
             <h1 class="nombre-sitio"><?php echo htmlspecialchars($nombre); ?></h1>
             <p class="slogan">
               <strong class="lema-txt"><?php echo htmlspecialchars($lema); ?></strong>
-              <span class="versiculo-txt"><?php echo htmlspecialchars($versiculo); ?></span>
+              <?php if($versiculo !== ''): ?>
+                <span class="versiculo-txt"><?php echo htmlspecialchars($versiculo); ?></span>
+              <?php endif; ?>
             </p>
           </div>
         </div>

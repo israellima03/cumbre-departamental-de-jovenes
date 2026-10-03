@@ -28,7 +28,7 @@ switch($accion){
       $res = $conn->query("
         SELECT
           i.id, i.nombre, i.apellido, i.carnet, i.celular,
-          i.fecha_nacimiento, i.edad,
+          i.edad,
           ig.nombre  AS iglesia,  ig.id AS iglesia_id,
           d.nombre   AS distrito, d.id  AS distrito_id,
           p.nombre   AS paquete,
@@ -36,9 +36,6 @@ switch($accion){
           ins.estado_pago, ins.metodo_pago, ins.fecha_pago, ins.precio_final,
           ur.nombre  AS registro_por,
           uc.nombre  AS confirmo_por,
-          GROUP_CONCAT(DISTINCT pr.nombre ORDER BY pr.nombre SEPARATOR ', ') AS productos,
-          MAX(ip.producto_entregado) AS producto_entregado,
-          MAX(ip.producto_entregado_por) AS prod_ent_por_id,
           ir.material_entregado,
           ir.material_entregado_por AS mat_ent_por_id
         FROM inscritos i
@@ -48,8 +45,6 @@ switch($accion){
         LEFT JOIN paquetes p     ON p.id   = ins.paquete_id
         LEFT JOIN usuarios ur    ON ur.id  = ins.registrado_por
         LEFT JOIN usuarios uc    ON uc.id  = ins.confirmado_por
-        LEFT JOIN inscripcion_productos ip ON ip.inscripcion_id = ins.id
-        LEFT JOIN productos pr   ON pr.id  = ip.producto_id
         LEFT JOIN inscripcion_regalos ir   ON ir.inscripcion_id = ins.id
         GROUP BY ins.id, i.id, ig.id, d.id, p.id, ur.id, uc.id, ir.id
         ORDER BY ins.fecha_pago DESC
@@ -57,14 +52,7 @@ switch($accion){
       $rows = [];
       while($r = $res->fetch_assoc()){
         /* resolver nombres de quién entregó en PHP en vez de SQL */
-        $prod_por_id = intval($r['prod_ent_por_id'] ?? 0);
         $mat_por_id  = intval($r['mat_ent_por_id']  ?? 0);
-        if($prod_por_id > 0){
-          $u = $conn->query("SELECT nombre FROM usuarios WHERE id=$prod_por_id LIMIT 1")->fetch_assoc();
-          $r['producto_entregado_por'] = $u ? $u['nombre'] : '—';
-        } else {
-          $r['producto_entregado_por'] = null;
-        }
         if($mat_por_id > 0){
           $u = $conn->query("SELECT nombre FROM usuarios WHERE id=$mat_por_id LIMIT 1")->fetch_assoc();
           $r['material_entregado_por'] = $u ? $u['nombre'] : '—';
@@ -86,14 +74,12 @@ switch($accion){
     $nombre    = trim($_POST['nombre']    ?? '');
     $apellido  = trim($_POST['apellido']  ?? '');
     $carnet    = trim($_POST['carnet']    ?? '');
-    $fecha_nac = trim($_POST['fecha_nacimiento'] ?? '');
     $edad      = intval($_POST['edad']    ?? 0);
     $celular   = trim($_POST['celular']   ?? '');
     $tipo_id   = intval($_POST['tipo_inscrito_id'] ?? 0);
     $igl_id    = intval($_POST['iglesia_id']  ?? 0);
     $dis_id    = intval($_POST['distrito_id'] ?? 0);
     $paq_id    = intval($_POST['paquete_id']  ?? 0);
-    $prod_json = $_POST['productos_json'] ?? '[]';
  
     if(!$nombre||!$apellido||!$carnet||!$celular||!$paq_id){
       echo json_encode(['ok'=>false,'msg'=>'Faltan datos obligatorios']); exit;
@@ -115,55 +101,35 @@ switch($accion){
     $precio_paq =floatval($paqData['precio_final']??$precio_orig);
     $descuento  =round($precio_orig-$precio_paq,2);
  
-    $productos=json_decode($prod_json,true)?:[];
-    $precio_productos=0;
-    foreach($productos as $prod){
-      $pid=intval($prod['id']??0); $cant=intval($prod['cantidad']??0);
-      if($pid>0&&$cant>0){
-        $pr=$conn->query("SELECT precio FROM productos WHERE id=$pid LIMIT 1")->fetch_assoc();
-        if($pr) $precio_productos+=floatval($pr['precio'])*$cant;
-      }
-    }
-    $precio_final=round($precio_paq+$precio_productos,2);
+    $precio_final=round($precio_paq,2);
  
     $conn->begin_transaction();
     try {
-      $stmt=$conn->prepare("INSERT INTO inscritos (nombre,apellido,carnet,fecha_nacimiento,edad,celular,iglesia_id,distrito_id,tipo_inscrito_id) VALUES(?,?,?,?,?,?,?,?,?)");
-      $stmt->bind_param('ssssissii',$nombre,$apellido,$carnet,$fecha_nac,$edad,$celular,$igl_id,$dis_id,$tipo_id);
+      $stmt=$conn->prepare("INSERT INTO inscritos (nombre,apellido,carnet,edad,celular,iglesia_id,distrito_id,tipo_inscrito_id) VALUES(?,?,?,?,?,?,?,?)");
+      $stmt->bind_param('sssisiii',$nombre,$apellido,$carnet,$edad,$celular,$igl_id,$dis_id,$tipo_id);
       if(!$stmt->execute()) throw new RuntimeException('Error inscrito');
       $inscrito_id=$conn->insert_id; $stmt->close();
  
-      $stmt=$conn->prepare("INSERT INTO inscripciones (inscrito_id,paquete_id,precio_original,precio_paquete,precio_productos,descuento_aplicado,precio_final,metodo_pago,estado_pago,fecha_pago,fecha_confirmacion,registrado_por,confirmado_por) VALUES(?,?,?,?,?,?,?,'efectivo','confirmado',NOW(),NOW(),?,?)");
-      $stmt->bind_param('iiddddiii',$inscrito_id,$paq_id,$precio_orig,$precio_paq,$precio_productos,$descuento,$precio_final,$usuario_id,$usuario_id);
+      /* queda pendiente hasta que tesorería confirme la entrega del dinero */
+      $stmt=$conn->prepare("INSERT INTO inscripciones (inscrito_id,paquete_id,precio_original,precio_paquete,descuento_aplicado,precio_final,metodo_pago,estado_pago,fecha_pago,registrado_por) VALUES(?,?,?,?,?,?,'efectivo','pendiente',NOW(),?)");
+      $stmt->bind_param('iiddddi',$inscrito_id,$paq_id,$precio_orig,$precio_paq,$descuento,$precio_final,$usuario_id);
       if(!$stmt->execute()) throw new RuntimeException('Error inscripcion');
       $inscripcion_id=$conn->insert_id; $stmt->close();
  
-      foreach($productos as $prod){
-        $pid=intval($prod['id']??0); $cant=intval($prod['cantidad']??0);
-        $talla=trim($prod['talla']??'');
-        $gen=trim(strtolower($prod['genero']??'hombre'));
-        if(!in_array($gen,['hombre','mujer','unisex'])) $gen='hombre';
-        if($pid>0&&$cant>0){
-          $stmt=$conn->prepare("INSERT INTO inscripcion_productos (inscripcion_id,producto_id,cantidad,talla,genero,producto_entregado,producto_entregado_por) VALUES(?,?,?,?,?,0,NULL)");
-          $stmt->bind_param('iiiss',$inscripcion_id,$pid,$cant,$talla,$gen);
-          $stmt->execute(); $stmt->close();
-          $conn->query("UPDATE productos SET cupos_disponibles=cupos_disponibles-$cant WHERE id=$pid AND cupos_disponibles>=$cant");
-        }
-      }
- 
-      $regalo_id=2;
-      $regal=$conn->query("SELECT id FROM regalos WHERE id=$regalo_id LIMIT 1")->fetch_assoc();
+      /* regalo: el primero con cupos disponibles */
+      $regal=$conn->query("SELECT id FROM regalos WHERE cupos_disponibles>0 ORDER BY id LIMIT 1")->fetch_assoc();
       if($regal){
+        $regalo_id=intval($regal['id']);
         $stmt=$conn->prepare("INSERT INTO inscripcion_regalos (inscripcion_id,regalo_id,material_entregado,material_entregado_por) VALUES(?,?,0,NULL)");
         $stmt->bind_param('ii',$inscripcion_id,$regalo_id);
         $stmt->execute(); $stmt->close();
+        $conn->query("UPDATE regalos SET cupos_disponibles=cupos_disponibles-1 WHERE id=$regalo_id AND cupos_disponibles>0");
       }
  
       $conn->query("UPDATE paquetes SET cupos_disponibles=cupos_disponibles-1 WHERE id=$paq_id AND cupos_disponibles>0");
       $conn->commit();
  
-      $credencial=generarCredencialHTML($conn,$inscrito_id,$inscripcion_id);
-      echo json_encode(['ok'=>true,'msg'=>'Inscripcion registrada y confirmada','inscrito_id'=>$inscrito_id,'credencial'=>$credencial]);
+      echo json_encode(['ok'=>true,'msg'=>'Inscripcion registrada. Queda PENDIENTE hasta que tesoreria confirme el pago.','inscrito_id'=>$inscrito_id]);
  
     } catch(RuntimeException $e){
       $conn->rollback();
@@ -176,25 +142,13 @@ switch($accion){
     $nombre=trim($_POST['nombre']??'');
     $apellido=trim($_POST['apellido']??'');
     $carnet=trim($_POST['carnet']??'');
-    $fecha=trim($_POST['fecha_nacimiento']??'');
     $edad=intval($_POST['edad']??0);
     $celular=trim($_POST['celular']??'');
     if(!$id||!$nombre){ echo json_encode(['ok'=>false,'msg'=>'Datos incompletos']); exit; }
-    $stmt=$conn->prepare("UPDATE inscritos SET nombre=?,apellido=?,carnet=?,fecha_nacimiento=?,edad=?,celular=? WHERE id=?");
-    $stmt->bind_param('sssssii',$nombre,$apellido,$carnet,$fecha,$edad,$celular,$id);
+    $stmt=$conn->prepare("UPDATE inscritos SET nombre=?,apellido=?,carnet=?,edad=?,celular=? WHERE id=?");
+    $stmt->bind_param('sssisi',$nombre,$apellido,$carnet,$edad,$celular,$id);
     $stmt->execute(); $stmt->close();
     echo json_encode(['ok'=>true,'msg'=>'Inscrito actualizado']);
-    break;
- 
-  case 'marcar_producto_entregado':
-    $inscripcion_id=intval($_POST['inscripcion_id']??0);
-    $entregado=intval($_POST['entregado']??0);
-    if($entregado){
-      $conn->query("UPDATE inscripcion_productos SET producto_entregado=1, producto_entregado_por=$usuario_id WHERE inscripcion_id=$inscripcion_id");
-    } else {
-      $conn->query("UPDATE inscripcion_productos SET producto_entregado=0, producto_entregado_por=NULL WHERE inscripcion_id=$inscripcion_id");
-    }
-    echo json_encode(['ok'=>true,'msg'=>$entregado?'Producto marcado como entregado':'Producto desmarcado']);
     break;
  
   case 'marcar_material_entregado':
@@ -221,35 +175,23 @@ switch($accion){
   case 'descargar_credencial':
     $inscrito_id=intval($_POST['inscrito_id']??0);
     if(!$inscrito_id){ echo json_encode(['ok'=>false,'msg'=>'ID requerido']); exit; }
-    $r=$conn->query("SELECT i.*, ins.id AS inscripcion_id FROM inscritos i INNER JOIN inscripciones ins ON ins.inscrito_id=i.id WHERE i.id=$inscrito_id LIMIT 1")->fetch_assoc();
+    $r=$conn->query("SELECT i.*, ins.id AS inscripcion_id, ins.estado_pago FROM inscritos i INNER JOIN inscripciones ins ON ins.inscrito_id=i.id WHERE i.id=$inscrito_id LIMIT 1")->fetch_assoc();
     if(!$r){ echo json_encode(['ok'=>false,'msg'=>'No encontrado']); exit; }
+    if($r['estado_pago']!=='confirmado'){ echo json_encode(['ok'=>false,'msg'=>'La credencial solo se genera cuando el pago esta confirmado']); exit; }
     $credencial=generarCredencialHTML($conn,$inscrito_id,$r['inscripcion_id']);
     echo json_encode(['ok'=>true,'credencial'=>$credencial]);
     break;
   case 'detalle_entrega':
     $inscripcion_id = intval($_GET['inscripcion_id'] ?? 0);
-    $tipo = trim($_GET['tipo'] ?? 'producto');
-    if($tipo === 'producto'){
-        $res = $conn->query("
-            SELECT pr.nombre, ip.cantidad, ip.talla, ip.genero
-            FROM inscripcion_productos ip
-            INNER JOIN productos pr ON pr.id = ip.producto_id
-            WHERE ip.inscripcion_id = $inscripcion_id
-        ");
-        $rows = [];
-        while($r = $res->fetch_assoc()) $rows[] = $r;
-        echo json_encode(['ok'=>true,'items'=>$rows]);
-    } else {
-        $res = $conn->query("
-            SELECT r.nombre, 1 AS cantidad, '' AS talla, '' AS genero
-            FROM inscripcion_regalos ir
-            INNER JOIN regalos r ON r.id = ir.regalo_id
-            WHERE ir.inscripcion_id = $inscripcion_id
-        ");
-        $rows = [];
-        while($r = $res->fetch_assoc()) $rows[] = $r;
-        echo json_encode(['ok'=>true,'items'=>$rows]);
-    }
+    $res = $conn->query("
+        SELECT r.nombre, 1 AS cantidad, '' AS talla, '' AS genero
+        FROM inscripcion_regalos ir
+        INNER JOIN regalos r ON r.id = ir.regalo_id
+        WHERE ir.inscripcion_id = $inscripcion_id
+    ");
+    $rows = [];
+    while($r = $res->fetch_assoc()) $rows[] = $r;
+    echo json_encode(['ok'=>true,'items'=>$rows]);
     break;
   case 'eliminar_inscrito':
     /* solo administrador */
@@ -267,12 +209,6 @@ switch($accion){
       $inscripcion_id = $ins['id'];
       $paquete_id     = $ins['paquete_id'];
 
-      /* recuperar cupos de productos */
-      $prods = $conn->query("SELECT producto_id, cantidad FROM inscripcion_productos WHERE inscripcion_id=$inscripcion_id");
-      while($p = $prods->fetch_assoc()){
-        $conn->query("UPDATE productos SET cupos_disponibles=cupos_disponibles+{$p['cantidad']} WHERE id={$p['producto_id']}");
-      }
-
       /* recuperar cupos de regalos */
       $conn->query("UPDATE regalos r
         INNER JOIN inscripcion_regalos ir ON ir.regalo_id = r.id
@@ -285,25 +221,17 @@ switch($accion){
       }
 
       /* eliminar registros relacionados */
-      $conn->query("DELETE FROM inscripcion_productos WHERE inscripcion_id=$inscripcion_id");
       $conn->query("DELETE FROM inscripcion_regalos WHERE inscripcion_id=$inscripcion_id");
 
       /* eliminar credenciales generadas */
       $comprobante = $conn->query("SELECT comprobante_qr FROM inscripciones WHERE id=$inscripcion_id LIMIT 1")->fetch_assoc();
       if($comprobante && $comprobante['comprobante_qr']){
-        $es_local = (strpos($_SERVER['HTTP_HOST'],'localhost') !== false);
-        $ruta_comp = $_SERVER['DOCUMENT_ROOT'] . ($es_local ? '/encuentro-departamental-de-jovenes/' : '/') . 'comprobantes/' . $comprobante['comprobante_qr'];
+        $ruta_comp = dirname(__DIR__) . '/comprobantes/' . $comprobante['comprobante_qr'];
         if(file_exists($ruta_comp)) @unlink($ruta_comp);
       }
 
       $conn->query("DELETE FROM inscripciones WHERE id=$inscripcion_id");
     }
-
-    /* eliminar equipo deportivo si tiene */
-    $conn->query("DELETE FROM equipos_deportivos WHERE inscrito_id=$inscrito_id");
-
-    /* eliminar concurso bíblico si tiene */
-    $conn->query("DELETE FROM concurso_inscritos WHERE inscrito_id=$inscrito_id");
 
     /* eliminar inscrito */
     $conn->query("DELETE FROM inscritos WHERE id=$inscrito_id");
@@ -320,17 +248,14 @@ function generarCredencialHTML($conn,$inscrito_id,$inscripcion_id){
   $r=$conn->query("
     SELECT i.nombre,i.apellido,i.carnet,i.celular,i.edad,
            ins.precio_final,ins.metodo_pago,ins.estado_pago,ins.fecha_pago,
-           p.nombre AS paquete,ig.nombre AS iglesia,d.nombre AS distrito,t.nombre AS tipo,
-           GROUP_CONCAT(pr.nombre SEPARATOR ', ') AS productos
+           p.nombre AS paquete,ig.nombre AS iglesia,d.nombre AS distrito,t.nombre AS tipo
     FROM inscritos i
     INNER JOIN inscripciones ins ON ins.id=$inscripcion_id
     LEFT JOIN paquetes p ON p.id=ins.paquete_id
     LEFT JOIN iglesias ig ON ig.id=i.iglesia_id
     LEFT JOIN distritos d ON d.id=i.distrito_id
     LEFT JOIN tipos_inscrito t ON t.id=i.tipo_inscrito_id
-    LEFT JOIN inscripcion_productos ip ON ip.inscripcion_id=ins.id
-    LEFT JOIN productos pr ON pr.id=ip.producto_id
-    WHERE i.id=$inscrito_id GROUP BY ins.id LIMIT 1
+    WHERE i.id=$inscrito_id LIMIT 1
   ")->fetch_assoc();
   if(!$r) return null;
 
@@ -342,8 +267,7 @@ function generarCredencialHTML($conn,$inscrito_id,$inscripcion_id){
   $base_url = 'https://mjoruro.com/ver-credencial.php?code=' . $codigo_qr;
   $qr_url   = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . urlencode($base_url);
 
-  $es_local = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false);
-  $carpeta  = $_SERVER['DOCUMENT_ROOT'] . ($es_local ? '/encuentro-departamental-de-jovenes/credenciales/' : '/credenciales/');
+  $carpeta  = dirname(__DIR__) . '/credenciales/';
   if(!is_dir($carpeta)) mkdir($carpeta, 0755, true);   
 
   $slug=preg_replace('/[^a-z0-9]/','_',strtolower($r['carnet']));
@@ -360,28 +284,28 @@ function generarCredencialHTML($conn,$inscrito_id,$inscripcion_id){
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;background:#f0f2f8;display:flex;flex-direction:column;align-items:center;padding:30px 16px;min-height:100vh;}
+body{font-family:Arial,sans-serif;background:#F4F2F0;display:flex;flex-direction:column;align-items:center;padding:30px 16px;min-height:100vh;}
 .acciones{margin-bottom:18px;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 24px;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;}
-.btn-pdf{background:#03045e;color:#fff;}
-.btn-pdf:hover{background:#da002b;}
+.btn-pdf{background:#2C2668;color:#fff;}
+.btn-pdf:hover{background:#E8750A;}
 .btn-print{background:#10b981;color:#fff;}
 .credencial{width:100%;max-width:420px;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.15);}
-.cab{background:#03045e;padding:10px 14px 8px;text-align:center;color:#fff;}
-.avatar{width:44px;height:44px;border-radius:50%;background:#da002b;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700;margin:0 auto 6px;}
+.cab{background:#2C2668;padding:10px 14px 8px;text-align:center;color:#fff;}
+.avatar{width:44px;height:44px;border-radius:50%;background:#E8750A;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700;margin:0 auto 6px;}
 .nombre-txt{font-size:13px;font-weight:700;margin-bottom:2px;}
 .subtitulo{font-size:9px;color:rgba(255,255,255,.6);}
 .body{padding:6px 12px;}
-.row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid #f0f2f8;}
+.row{display:flex;justify-content:space-between;align-items:center;padding:2px 0;border-bottom:1px solid #F4F2F0;}
 .row:last-child{border-bottom:none;}
 .lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;}
-.val{font-size:9px;font-weight:600;color:#1a1d2e;text-align:right;max-width:60%;}
+.val{font-size:9px;font-weight:600;color:#2C2668;text-align:right;max-width:60%;}
 .estado-ok{display:inline-block;background:#d1fae5;color:#065f46;border:1px solid #10b981;border-radius:20px;padding:1px 8px;font-size:8px;font-weight:700;}
-.qr-wrap{border-top:1px dashed #e4e8f0;margin:0;padding:6px 12px;text-align:center;background:#f8faff;}
+.qr-wrap{border-top:1px dashed #E7E2DF;margin:0;padding:6px 12px;text-align:center;background:#F4F2F0;}
 .qr-lbl{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#9ca3af;margin-bottom:4px;}
-.qr-img{width:80px;height:80px;border:2px solid #03045e;border-radius:6px;padding:2px;background:#fff;}
+.qr-img{width:80px;height:80px;border:2px solid #2C2668;border-radius:6px;padding:2px;background:#fff;}
 .qr-code-txt{font-size:7px;color:#9ca3af;margin-top:4px;letter-spacing:.5px;word-break:break-all;}
-.pie{background:#f0f2f8;padding:5px;text-align:center;font-size:8px;color:#9ca3af;}
+.pie{background:#F4F2F0;padding:5px;text-align:center;font-size:8px;color:#9ca3af;}
 @media print{.acciones{display:none;}}
 </style>
 </head><body>
@@ -393,7 +317,7 @@ body{font-family:Arial,sans-serif;background:#f0f2f8;display:flex;flex-direction
   <div class="cab">
     <div class="avatar">'.$iniciales.'</div>
     <div class="nombre-txt">'.htmlspecialchars($r['nombre'].' '.$r['apellido']).'</div>
-    <div class="subtitulo">Encuentro Departamental de Jovenes — Tarija 2026</div>
+    <div class="subtitulo">Cumbre Departamental de Jóvenes — Oruro 2026</div>
   </div>
   <div class="body">
     <div class="row"><span class="lbl">Carnet</span><span class="val">'.htmlspecialchars($r['carnet']).'</span></div>
@@ -403,7 +327,6 @@ body{font-family:Arial,sans-serif;background:#f0f2f8;display:flex;flex-direction
     <div class="row"><span class="lbl">Iglesia</span><span class="val">'.htmlspecialchars($r['iglesia']??'—').'</span></div>
     <div class="row"><span class="lbl">Distrito</span><span class="val">'.htmlspecialchars($r['distrito']??'—').'</span></div>
     <div class="row"><span class="lbl">Paquete</span><span class="val">'.htmlspecialchars($r['paquete']??'—').'</span></div>
-    <div class="row"><span class="lbl">Productos</span><span class="val">'.htmlspecialchars($r['productos']??'—').'</span></div>
     <div class="row"><span class="lbl">Total pagado</span><span class="val">Bs. '.number_format(floatval($r['precio_final']),0).'</span></div>
     <div class="row"><span class="lbl">Método pago</span><span class="val">'.strtoupper($r['metodo_pago']).'</span></div>
     <div class="row"><span class="lbl">Estado</span><span class="val"><span class="estado-ok">CONFIRMADO</span></span></div>

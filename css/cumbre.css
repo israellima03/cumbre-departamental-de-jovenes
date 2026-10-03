@@ -1,0 +1,526 @@
+/* ==========================================================================
+   CUMBRE.CSS — Identidad visual "Cumbre Departamental de Jóvenes Oruro"
+   Se carga después de main.css y sobrescribe colores, fondos y tipografías.
+   ========================================================================== */
+
+:root {
+  --indigo:     #2C2668;   /* índigo del escudo (reemplaza al negro) */
+  --fondo:      #3A3285;   /* fondo único de invitación a comisiones */
+  --rojo:       #C8102E;   /* rojo del escudo */
+  --dorado:     #F5C518;   /* dorado del escudo */
+  --verde:     #5C625B;
+  --naranja:   #E8750A;
+  --naranja-2: #C4600A;
+  --vino:      #652C2A;
+  --crema:     #F4F2F0;
+  --piedra:    #B0A9A5;
+  --gris:      #E7E2DF;
+
+  --f-titulo:  'Anton', 'Oswald', sans-serif;
+  --f-brush:   'Kaushan Script', cursive;
+  --f-script:  'Pacifico', cursive;
+  --f-info:    'Oswald', sans-serif;
+  --f-texto:   'Montserrat', sans-serif;
+}
+
+/* ── BASE ── */
+body {
+  background-color: var(--crema);
+  color: var(--indigo);
+  font-family: var(--f-texto);
+}
+
+h2 {
+  font-family: var(--f-titulo);
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: var(--indigo);
+}
+
+h2::after {
+  background: var(--naranja);
+  background-image: none;
+  height: 4px;
+  width: 70px;
+  margin: 14px auto 28px;
+  border-radius: 2px;
+}
+
+h3 {
+  color: var(--naranja);
+  font-family: var(--f-info);
+}
+
+.button {
+  background-color: var(--naranja);
+  border-color: var(--naranja);
+  font-family: var(--f-info);
+  letter-spacing: 1px;
+  border-radius: 4px;
+}
+.button:hover { background-color: var(--naranja-2); border-color: var(--naranja-2); }
+.button.hollow { color: var(--naranja); border-color: var(--naranja); }
+
+/* quitar círculos decorativos del diseño anterior */
+.seccion-invitacion::before, .seccion-invitacion::after,
+section.invitados::before,  section.invitados::after,
+section.precios::before,    section.precios::after,
+section.seccion-mapa::before, section.seccion-mapa::after {
+  display: none;
+}
+
+/* ── HERO ── */
+div.hero {
+  background-color: var(--naranja);
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(245,197,24,0.25) 0, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(101,44,42,0.45) 0, transparent 55%),
+    linear-gradient(160deg, var(--naranja) 0%, var(--naranja-2) 55%, var(--vino) 100%);
+  overflow: hidden;
+}
+
+.hero-fondo-txt {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  font-family: var(--f-titulo);
+  font-size: 30vw;
+  line-height: 1;
+  color: var(--crema);
+  opacity: 0.14;
+  letter-spacing: -0.5vw;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.logo-izq, .logo-der { filter: drop-shadow(0 3px 6px rgba(44,38,104,0.45)); }
+
+div.contenido-header,
+.logos-laterales,
+div.scroll-down { z-index: 1; }
+div.contenido-header { position: relative; }
+
+nav.redes-sociales a { color: #fff; }
+nav.redes-sociales a:hover { background-color: var(--indigo); color: #fff; }
+
+div.informacion-evento { color: #fff; }
+div.informacion-evento p {
+  font-family: var(--f-info);
+  font-size: 16px;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+div.informacion-evento p i { color: var(--dorado); margin-right: 6px; }
+
+h1.nombre-sitio {
+  font-family: var(--f-titulo);
+  font-weight: 400;
+  background: none;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  text-shadow: 0 3px 14px rgba(101,44,42,0.45);
+  animation: none;
+  letter-spacing: 2px;
+  font-size: 5vw;
+  line-height: 1.05;
+  margin-top: 18px;
+}
+
+.lema-txt {
+  font-family: var(--f-brush);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 5em;
+  background: none;
+  color: var(--dorado);
+  -webkit-text-fill-color: var(--dorado);
+  text-shadow: 0 3px 12px rgba(101,44,42,0.5);
+  -webkit-text-stroke: 0;
+  filter: none;
+  animation: none;
+  transform: rotate(-3deg);
+  margin-top: 6px;
+}
+
+.versiculo-txt {
+  font-family: var(--f-texto);
+  font-weight: 600;
+  color: var(--crema);
+  -webkit-text-fill-color: var(--crema);
+  text-shadow: none;
+}
+.versiculo-txt::before,
+.versiculo-txt::after { background: var(--crema); opacity: 0.5; }
+
+p.scroll-texto, div.scroll-flechas i { color: rgba(255,255,255,0.8); }
+
+@media (max-width: 768px) {
+  .hero-fondo-txt { font-size: 38vw; top: 58%; }
+  h1.nombre-sitio { font-size: 9vw; }
+  .lema-txt { font-size: 3.2em; }
+}
+
+/* ── BARRA ── */
+div.barra {
+  background: var(--indigo);
+  border-bottom: 3px solid var(--naranja);
+}
+div.barra.sticky {
+  background: rgba(44,38,104,0.97);
+}
+nav.navegacion-principal a {
+  font-family: var(--f-info);
+  letter-spacing: 1.5px;
+}
+nav.navegacion-principal a.nav-activo {
+  background-color: var(--naranja) !important;
+  border-color: var(--naranja) !important;
+}
+@media (max-width: 767px) {
+  nav.navegacion-principal {
+    background: rgba(44,38,104,0.97);
+    border-color: rgba(232,117,10,0.4);
+  }
+  nav.navegacion-principal a:hover,
+  nav.navegacion-principal a.nav-activo {
+    background: var(--naranja) !important;
+    border-color: var(--naranja) !important;
+  }
+}
+
+/* ── INVITACIÓN ── */
+.seccion-invitacion {
+  background: var(--fondo);
+  padding: 90px 20px;
+}
+.inv-fondo-txt {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--f-titulo);
+  font-size: 26vw;
+  line-height: 1;
+  color: var(--crema);
+  opacity: 0.06;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+.inv-tag {
+  font-family: var(--f-info);
+  color: rgba(244,242,240,0.6);
+}
+.inv-titulo {
+  font-family: var(--f-titulo);
+  font-weight: 400;
+  color: var(--crema);
+  font-size: 3em;
+  letter-spacing: 1px;
+}
+.inv-titulo span {
+  font-family: var(--f-brush);
+  text-transform: none;
+  color: var(--naranja);
+  font-size: 1.15em;
+  display: inline-block;
+  transform: rotate(-3deg);
+  margin-top: 6px;
+}
+.inv-texto {
+  font-family: var(--f-texto);
+  color: rgba(244,242,240,0.78);
+}
+.inv-texto strong { color: var(--crema); }
+.inv-dato {
+  background: rgba(244,242,240,0.05);
+  border: 1px solid rgba(244,242,240,0.12);
+  border-radius: 10px;
+  padding: 16px 22px;
+  min-width: 170px;
+}
+.inv-dato i { color: var(--naranja); }
+.inv-dato-lbl { color: rgba(244,242,240,0.6); }
+.inv-dato-val { font-family: var(--f-info); color: var(--crema); }
+.inv-btn {
+  background: var(--naranja);
+  border-color: var(--naranja);
+  font-family: var(--f-info);
+}
+.inv-btn:hover { color: var(--naranja); box-shadow: 0 8px 24px rgba(232,117,10,0.35); }
+
+@media (max-width: 768px) {
+  .seccion-invitacion { padding: 60px 16px; }
+  .inv-titulo { font-size: 2em; }
+  .inv-dato { min-width: 0; width: 100%; }
+  .inv-fondo-txt { font-size: 34vw; }
+}
+
+/* ── PROGRAMA ── */
+section.programa {
+  min-height: 0;
+  background: var(--fondo);
+}
+div.contenido-programa { padding: 40px 0 70px; }
+div.programa-evento {
+  background: #fff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  border-top: 6px solid var(--naranja);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(44,38,104,0.12);
+}
+div.programa-evento h2 {
+  font-family: var(--f-titulo);
+  color: var(--indigo);
+  text-shadow: none;
+  font-size: 1.8em;
+}
+nav.menu-programa { border-bottom-color: var(--gris); }
+nav.menu-programa a { color: var(--verde); font-family: var(--f-info); }
+nav.menu-programa a i { color: var(--piedra); }
+nav.menu-programa a:hover { color: var(--indigo); background: var(--gris); }
+nav.menu-programa a.activo { background: var(--naranja); color: #fff; }
+div.detalle-evento { border-bottom-color: var(--gris); }
+.evento-tipo { background: var(--vino); font-family: var(--f-info); }
+.evento-hora { color: var(--verde); font-family: var(--f-info); }
+.evento-hora i { color: var(--verde); }
+.evento-tema { color: var(--indigo); font-family: var(--f-texto); text-shadow: none; }
+.evento-tema i { color: var(--naranja); }
+.evento-expositor, .evento-expositor i { color: var(--indigo); }
+.exp-rango { color: var(--vino); background: rgba(232,117,10,0.12); }
+.evento-moderador, .evento-moderador i { color: var(--verde); }
+
+/* ── INVITADOS ── */
+section.invitados {
+  background: var(--fondo);
+  padding: 80px 20px;
+  text-align: center;
+}
+section.invitados h2 { color: var(--crema); }
+section.invitados .com-tag { color: rgba(244,242,240,0.6); }
+
+ul.lista-invitados {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 280px));
+  justify-content: center;
+  gap: 28px;
+  padding: 10px 0 0;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+div.invitado, a.invitado {
+  display: block;
+  position: relative;
+  height: auto;
+  background: var(--crema);
+  border-radius: 14px;
+  overflow: hidden;
+  text-decoration: none;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.25);
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+a.invitado:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 44px rgba(0,0,0,0.35);
+}
+
+.invitado-foto {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: var(--gris);
+  overflow: hidden;
+}
+.invitado-foto::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 6px;
+  background: var(--naranja);
+}
+a.invitado img,
+div.invitado img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  filter: none;
+  transition: transform .5s ease;
+}
+a.invitado:hover img {
+  transform: scale(1.06);
+}
+.invitado-inicial {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  font-family: var(--f-titulo);
+  font-size: 5em;
+  color: var(--verde);
+}
+
+.invitado-info {
+  padding: 18px 16px 22px;
+  text-align: center;
+}
+.invitado-rango {
+  display: inline-block;
+  font-family: var(--f-info);
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--naranja);
+  padding: 3px 12px;
+  border-radius: 20px;
+}
+section.invitados p.invitado-nombre {
+  position: static;
+  background: none;
+  font-family: var(--f-titulo);
+  font-size: 1.45em;
+  color: var(--indigo);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  margin: 10px 0 0;
+  padding: 0;
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  section.invitados { padding: 50px 16px; }
+  ul.lista-invitados { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .invitado-info { padding: 12px 8px 14px; }
+  section.invitados p.invitado-nombre { font-size: 1.05em; }
+  .invitado-rango { font-size: 0.65em; letter-spacing: 1px; }
+}
+
+/* ── PRECIOS ── */
+section.precios {
+  background: var(--fondo);
+}
+section.precios h2 { color: var(--crema); }
+section.precios div.aviso-inscripcion {
+  background: rgba(244,242,240,0.06);
+  border-left-color: var(--naranja);
+  color: var(--crema);
+  font-family: var(--f-texto);
+}
+section.precios div.aviso-inscripcion i,
+section.precios a.link-inscripcion { color: var(--naranja); }
+
+div.tabla-precio {
+  border: none;
+  border-top: 6px solid var(--naranja);
+  border-radius: 10px;
+}
+div.tabla-precio:hover {
+  border: none;
+  border-top: 6px solid var(--naranja);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+}
+div.tabla-precio h3 { font-family: var(--f-info); color: var(--indigo); }
+div.tabla-precio p.numero {
+  font-family: var(--f-titulo);
+  font-weight: 400;
+  font-size: 2.8em;
+  color: var(--vino);
+  text-shadow: none;
+}
+@media only screen and (min-width: 768px) {
+  ul.lista-precios {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  ul.lista-precios > li { width: 300px; }
+}
+div.tabla-precio ul li {
+  font-family: var(--f-texto);
+  color: var(--verde);
+}
+div.tabla-precio ul li::before {
+  font-family: 'Font Awesome 6 Free';
+  font-weight: 900;
+  color: var(--naranja);
+}
+div.badge-descuento { background-color: var(--vino); }
+
+/* ── MAPA ── */
+section.seccion-mapa { background: var(--fondo); }
+section.seccion-mapa h2 { color: var(--crema); }
+section.seccion-mapa p.texto-mapa { color: rgba(244,242,240,0.8); }
+section.seccion-mapa p.texto-mapa i { color: var(--naranja); }
+div.contenedor-mapa { border-radius: 12px; overflow: hidden; box-shadow: 0 12px 34px rgba(0,0,0,0.25); }
+div.overlay-mapa { background-color: rgba(44,38,104,0.88); font-family: var(--f-info); }
+div.overlay-mapa i { color: var(--naranja); }
+a.link-mapa:hover div.overlay-mapa { background-color: rgba(232,117,10,0.92); }
+a.link-mapa:hover div.overlay-mapa i { color: #fff; }
+.mapa-sin-ubicacion, .mapa-sin-ubicacion i { color: rgba(244,242,240,0.75); }
+
+/* ── COMISIONES ── */
+.seccion-comisiones { background: var(--fondo); }
+.com-tag { font-family: var(--f-info); color: rgba(244,242,240,0.6); }
+.com-titulo { font-family: var(--f-titulo); font-weight: 400; color: var(--crema); }
+.com-card { background: var(--crema); }
+.com-card-header { background: var(--indigo); }
+.com-icono { background: var(--naranja); }
+.com-nombre { font-family: var(--f-info); }
+.com-encargado { border-bottom-color: var(--gris); }
+.com-enc-info { color: var(--indigo); font-family: var(--f-texto); }
+.com-enc-info i { color: var(--naranja); }
+
+/* ── FOOTER ── */
+footer.site-footer { background-color: var(--indigo); }
+footer.site-footer h3 { font-family: var(--f-titulo); font-weight: 400; letter-spacing: 1.5px; }
+footer.site-footer h3 span { color: var(--naranja); }
+footer.site-footer p,
+div.Ultimas-tweets ul li { font-family: var(--f-texto); color: rgba(244,242,240,0.8); }
+div.Ultimas-tweets ul li { border-bottom-color: rgba(244,242,240,0.1); }
+footer .redes-sociales a { background-color: transparent; border-color: rgba(244,242,240,0.6); color: var(--crema); }
+footer .redes-sociales a:hover { background-color: var(--naranja); border-color: var(--naranja); }
+p.copyright { background-color: #231E58; color: var(--piedra); font-family: var(--f-texto); }
+
+/* ── COLORES POR TIPO DE EVENTO (calendario / conferencia) ── */
+div.tarjeta-evento.tipo-conferencia, div.tarjeta-evento.tipo-paseo,
+div.tarjeta-evento.tipo-paseo-tours, div.tarjeta-evento.tipo-deportivo { border-top-color: var(--verde); }
+div.tarjeta-evento.tipo-predica, div.tarjeta-evento.tipo-vigilia { border-top-color: var(--vino); }
+div.tarjeta-evento.tipo-taller, div.tarjeta-evento.tipo-carrera,
+div.tarjeta-evento.tipo-clausura, div.tarjeta-evento.tipo-concurso { border-top-color: var(--naranja); }
+div.tarjeta-evento.tipo-premiacion { border-top-color: var(--piedra); }
+
+div.tarjeta-evento.tipo-conferencia div.tarjeta-cabecera { background: linear-gradient(135deg, var(--indigo), var(--verde)); }
+div.tarjeta-evento.tipo-predica     div.tarjeta-cabecera,
+div.tarjeta-evento.tipo-vigilia     div.tarjeta-cabecera { background: linear-gradient(135deg, var(--vino), #8a3d3a); }
+div.tarjeta-evento.tipo-taller      div.tarjeta-cabecera,
+div.tarjeta-evento.tipo-carrera     div.tarjeta-cabecera,
+div.tarjeta-evento.tipo-clausura    div.tarjeta-cabecera,
+div.tarjeta-evento.tipo-concurso    div.tarjeta-cabecera { background: linear-gradient(135deg, var(--naranja-2), var(--naranja)); }
+div.tarjeta-evento.tipo-paseo       div.tarjeta-cabecera,
+div.tarjeta-evento.tipo-paseo-tours div.tarjeta-cabecera,
+div.tarjeta-evento.tipo-deportivo   div.tarjeta-cabecera { background: linear-gradient(135deg, var(--verde), #747a72); }
+div.tarjeta-evento.tipo-premiacion  div.tarjeta-cabecera { background: linear-gradient(135deg, #8a827e, var(--piedra)); }
+
+div.tarjeta-evento.tipo-conferencia div.tarjeta-icono,
+div.tarjeta-evento.tipo-paseo div.tarjeta-icono,
+div.tarjeta-evento.tipo-paseo-tours div.tarjeta-icono,
+div.tarjeta-evento.tipo-deportivo div.tarjeta-icono { color: var(--verde); }
+div.tarjeta-evento.tipo-predica div.tarjeta-icono,
+div.tarjeta-evento.tipo-vigilia div.tarjeta-icono { color: var(--vino); }
+div.tarjeta-evento.tipo-taller div.tarjeta-icono,
+div.tarjeta-evento.tipo-carrera div.tarjeta-icono,
+div.tarjeta-evento.tipo-clausura div.tarjeta-icono,
+div.tarjeta-evento.tipo-concurso div.tarjeta-icono { color: var(--naranja); }
+div.tarjeta-evento.tipo-premiacion div.tarjeta-icono { color: var(--piedra); }
+
+span.tipo-evento-badge.tipo-conferencia { background: var(--gris); color: var(--indigo); }
+span.tipo-evento-badge.tipo-predica,
+span.tipo-evento-badge.tipo-vigilia     { background: rgba(101,44,42,0.12); color: var(--vino); }
+span.tipo-evento-badge.tipo-taller      { background: rgba(232,117,10,0.14); color: var(--naranja-2); }

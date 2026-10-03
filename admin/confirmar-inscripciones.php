@@ -16,13 +16,29 @@ include_once 'funciones/funciones.php';
 ?>
 
 <main class="content" id="main-content">
-  <div class="page active" id="page-confirmar-qr">
+  <div class="page active" id="page-confirmar-inscripciones">
 
     <div class="page-header">
       <div>
-        <h1 class="page-title">Confirmar Pagos <span>QR</span></h1>
-        <p class="page-sub">Verifica los comprobantes y confirma las inscripciones pendientes.</p>
+        <h1 class="page-title">Confirmar <span>Inscripciones</span></h1>
+        <p class="page-sub">Confirma los pagos por QR y los pagos en efectivo entregados a tesorería.</p>
       </div>
+    </div>
+
+    <!-- PESTAÑAS -->
+    <div class="ci-tabs">
+      <button class="ci-tab active" data-tab="qr">
+        <i class="fa-solid fa-qrcode"></i> Confirmar QR
+      </button>
+      <button class="ci-tab" data-tab="efectivo">
+        <i class="fa-solid fa-money-bill-wave"></i> Confirmar Efectivo
+      </button>
+    </div>
+
+    <!-- ══ PANEL QR ══ -->
+    <div class="ci-panel active" id="panel-qr">
+
+    <div class="ci-panel-header">
       <div class="qr-stats-mini">
         <span class="qr-stat-item" id="stat-pend-mini">
           <i class="fa-solid fa-clock"></i>
@@ -76,7 +92,6 @@ include_once 'funciones/funciones.php';
                 <th>Iglesia</th>
                 <th>Paquete</th>
                 <th>Precio paquete</th>
-                <th>Productos</th>
                 <th>Descuento</th>
                 <th>Total</th>
                 <th>Fecha registro</th>
@@ -86,7 +101,7 @@ include_once 'funciones/funciones.php';
             </thead>
             <tbody id="tbody-qr">
               <tr>
-                <td colspan="13" class="tabla-loading">
+                <td colspan="12" class="tabla-loading">
                   <i class="fa-solid fa-spinner fa-spin"></i> Cargando...
                 </td>
               </tr>
@@ -106,6 +121,80 @@ include_once 'funciones/funciones.php';
       </div>
       <div class="paginacion" id="paginacion-qr"></div>
     </div>
+
+    </div><!-- /panel-qr -->
+
+    <!-- ══ PANEL EFECTIVO ══ -->
+    <div class="ci-panel" id="panel-efectivo">
+
+      <div class="ci-panel-header">
+        <div class="qr-stats-mini">
+          <span class="qr-stat-item">
+            <i class="fa-solid fa-clock"></i>
+            <span id="ef-num-pendientes">—</span> pendientes
+          </span>
+          <span class="qr-stat-item qr-stat-ok">
+            <i class="fa-solid fa-circle-check"></i>
+            <span id="ef-num-confirmados">—</span> confirmados
+          </span>
+        </div>
+      </div>
+
+      <div class="qr-filtros">
+        <div class="qr-filtro-grupo">
+          <i class="fa-solid fa-search"></i>
+          <input type="text" id="ef-buscar" placeholder="Buscar por nombre, carnet o celular...">
+        </div>
+        <select id="ef-distrito" class="select-filtro">
+          <option value="">Todos los distritos</option>
+          <?php
+            $res_dis = $conn->query("SELECT id, nombre FROM distritos ORDER BY nombre");
+            while($d = $res_dis->fetch_assoc()):
+          ?>
+            <option value="<?php echo $d['id']; ?>"><?php echo htmlspecialchars($d['nombre']); ?></option>
+          <?php endwhile; ?>
+        </select>
+        <select id="ef-estado" class="select-filtro">
+          <option value="pendiente">Solo pendientes</option>
+          <option value="confirmado">Solo confirmados</option>
+          <option value="">Todos</option>
+        </select>
+      </div>
+
+      <div class="card" style="margin-top:20px;">
+        <div class="card-header">
+          <h3><i class="fa-solid fa-money-bill-wave"></i> Inscripciones en Efectivo</h3>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span class="qr-total-lbl" id="ef-total-lbl">Cargando...</span>
+            <span class="ef-suma" id="ef-suma"></span>
+          </div>
+        </div>
+        <div class="tabla-wrap">
+          <table class="tabla-inscritos" id="tabla-efectivo">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Participante</th>
+                <th>Carnet</th>
+                <th>Celular</th>
+                <th>Iglesia</th>
+                <th>Distrito</th>
+                <th>Paquete</th>
+                <th>Total</th>
+                <th>Registró</th>
+                <th>Fecha registro</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-efectivo">
+              <tr><td colspan="12" class="tabla-loading"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /panel-efectivo -->
 
   </div>
 </main>
@@ -132,5 +221,5 @@ include_once 'funciones/funciones.php';
 <!-- TOAST -->
 <div class="toast" id="toast-qr"></div>
 
-<?php $js_pagina = ['confirmar-qr.js']; ?>
+<?php $js_pagina = ['confirmar-qr.js', 'confirmar-efectivo.js']; ?>
 <?php include_once 'templates/footer.php'; ?>

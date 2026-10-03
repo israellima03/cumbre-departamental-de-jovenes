@@ -197,7 +197,7 @@ function renderAdmins(lista){
 
   tbody.innerHTML = lista.map(function(u, i){
     var roles = (u.roles||'').split(',').filter(Boolean).map(function(r){
-      return '<span style="display:inline-block;background:#eff6ff;color:#03045e;'+
+      return '<span style="display:inline-block;background:#F4F2F0;color:#2C2668;'+
              'border:1px solid #bfdbfe;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;margin:1px;">'+
              esc(r.trim())+'</span>';
     }).join(' ');
@@ -245,8 +245,8 @@ function initRolesCheckboxes(){
 function estiloRol(cb){
   var lbl = cb.closest('label');
   if(!lbl) return;
-  lbl.style.borderColor = cb.checked ? '#03045e' : '';
-  lbl.style.background  = cb.checked ? '#eff6ff' : '';
+  lbl.style.borderColor = cb.checked ? '#2C2668' : '';
+  lbl.style.background  = cb.checked ? '#F4F2F0' : '';
   lbl.style.fontWeight  = cb.checked ? '700'     : '';
 }
 

@@ -1,3 +1,24 @@
 # Include your project-specific ignores in this file
 # Read about how to use .gitignore: https://help.github.com/articles/ignoring-files
 # Useful .gitignore templates: https://github.com/github/gitignore
+
+# ── Configuración local / producción (cada servidor tiene la suya) ──
+# Copia includes/funciones/bd_conexion.example.php como bd_conexion.php y pon los datos del servidor.
+includes/funciones/bd_conexion.php
+
+# ── Archivos que se suben desde el sitio o el panel ──
+# Comprobantes de pago QR
+comprobantes/*
+!comprobantes/.gitkeep
+# Credenciales generadas
+credenciales/*
+!credenciales/.gitkeep
+# Material de conferencias
+material/*
+!material/.gitkeep
+# Fotos de invitados y QR de pago subidos desde el panel (nombre_1234567890.ext)
+img/*_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].*
+
+# ── Archivos de trabajo ──
+*.sql
+*.dbml

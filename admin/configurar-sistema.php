@@ -64,13 +64,13 @@ if($res) while($r = $res->fetch_assoc()) $ubicaciones[] = $r;
             <span class="modal-label">Nombre del Evento</span>
             <input type="text" id="cfg-evento-nombre" class="input-filtro" style="width:100%;"
                    value="<?php echo htmlspecialchars($cfg['evento_nombre']??''); ?>"
-                   placeholder="Encuentro Departamental de Jóvenes">
+                   placeholder="Cumbre Departamental de Jóvenes">
           </div>
           <div class="modal-field">
             <span class="modal-label">Lema / Eslogan</span>
             <input type="text" id="cfg-evento-lema" class="input-filtro" style="width:100%;"
                    value="<?php echo htmlspecialchars($cfg['evento_lema']??''); ?>"
-                   placeholder="SIN FILTROS">
+                   placeholder="Llamados a testificar">
           </div>
           <div class="modal-field">
             <span class="modal-label">Versículo</span>
@@ -87,8 +87,8 @@ if($res) while($r = $res->fetch_assoc()) $ubicaciones[] = $r;
             <div class="modal-field">
               <span class="modal-label">Ciudad</span>
               <input type="text" id="cfg-evento-ciudad" class="input-filtro" style="width:100%;"
-                     value="<?php echo htmlspecialchars($cfg['evento_ciudad']??'Tarija, Bolivia'); ?>"
-                     placeholder="Tarija, Bolivia">
+                     value="<?php echo htmlspecialchars($cfg['evento_ciudad']??'Oruro, Bolivia'); ?>"
+                     placeholder="Oruro, Bolivia">
             </div>
           </div>
           <button class="btn-primary cfg-btn-guardar" onclick="guardarConfig('evento')">
@@ -457,14 +457,13 @@ if($res) while($r = $res->fetch_assoc()) $ubicaciones[] = $r;
 
 /* ── TABLA ── */
 .badge-tipo { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; }
-.tipo-conferencia { background:#dbeafe;color:#1d4ed8; }
+.tipo-conferencia { background:#E7E2DF;color:#652C2A; }
 .tipo-actividad   { background:#d1fae5;color:#065f46; }
 
 /* ── RESPONSIVE ── */
 @media (max-width:768px) {
   .prog-tabs { overflow-x:auto; flex-wrap:nowrap; padding:4px; }
   .prog-tab  { flex-shrink:0; padding:8px 12px; font-size:12px; }
-  .col-url-red { display:none; }
   .cfg-form-wrap { padding:16px; }
   .cfg-form { max-width:100%; }
 }
@@ -508,7 +507,7 @@ if($res) while($r = $res->fetch_assoc()) $ubicaciones[] = $r;
 
 /* ── BADGE TIPO ── */
 .badge-tipo { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; text-transform:uppercase; }
-.tipo-conferencia { background:#dbeafe;color:#1d4ed8; }
+.tipo-conferencia { background:#E7E2DF;color:#652C2A; }
 .tipo-actividad   { background:#d1fae5;color:#065f46; }
 
 /* ══════════════════════════════════════
@@ -519,9 +518,6 @@ if($res) while($r = $res->fetch_assoc()) $ubicaciones[] = $r;
   /* tabs scroll horizontal */
   .prog-tabs { overflow-x:auto; flex-wrap:nowrap; padding:4px; }
   .prog-tab  { flex-shrink:0; padding:8px 12px; font-size:12px; }
-
-  /* ocultar URL en tabla redes y ubicaciones */
-  .col-url-red { display:none; }
 
   /* form */
   .cfg-form-wrap { padding:16px; }

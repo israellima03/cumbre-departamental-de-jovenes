@@ -139,38 +139,16 @@ window.cargarTablaInscritos = function(){
 function cargarEntregas(){
   fetch('api_reportes.php?accion=stats_entregas')
   .then(r=>r.json()).then(function(d){
-    set('re-prod-entregados', d.prod_entregados);
-    set('re-prod-pendientes', d.prod_pendientes);
     set('re-mat-entregados',  d.mat_entregados);
     set('re-mat-pendientes',  d.mat_pendientes);
-  });
-
-  api('por_talla','tb-tallas',function(rows){
-    return rows.map(function(r){
-      return '<tr>'+
-        '<td>'+esc(r.producto)+'</td>'+
-        '<td>'+esc(r.talla||'—')+'</td>'+
-        '<td>'+genIcon(r.genero)+' '+esc(r.genero||'—')+'</td>'+
-        '<td style="font-weight:600;">'+r.cantidad+'</td>'+
-        '<td>'+r.entregados+' / '+r.cantidad+'</td>'+
-      '</tr>';
-    }).join('');
-  });
-
-  api('por_genero_prod','tb-genero-prod',function(rows){
-    return rows.map(function(r){
-      return '<tr><td>'+esc(r.producto)+'</td><td>'+genIcon(r.genero)+' '+esc(r.genero||'—')+'</td><td style="font-weight:600;">'+r.total+'</td></tr>';
-    }).join('');
   });
 
   cargarTablaEntregas();
 }
 
 window.cargarTablaEntregas = function(){
-  var tipo   = val('rfiltro-entrega-tipo');
   var estado = val('rfiltro-entrega-estado');
   var url    = 'api_reportes.php?accion=tabla_entregas';
-  if(tipo)   url+='&tipo='+tipo;
   if(estado) url+='&estado='+estado;
 
   fetch(url).then(r=>r.json()).then(function(data){
@@ -181,11 +159,10 @@ window.cargarTablaEntregas = function(){
       var est = e.entregado=='1'
         ? '<span class="badge badge-entregado">Entregado</span>'
         : '<span class="badge badge-pend-ent">Pendiente</span>';
-      var det = e.talla ? ' — '+esc(e.talla)+' '+genIcon(e.genero) : '';
       return '<tr>'+
         '<td>'+(i+1)+'</td>'+
         '<td style="font-weight:600;font-size:12px;">'+esc(e.inscrito)+'</td>'+
-        '<td style="font-size:12px;">'+esc(e.item)+det+'</td>'+
+        '<td style="font-size:12px;">'+esc(e.item)+'</td>'+
         '<td><span style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;">'+esc(e.tipo_item)+'</span></td>'+
         '<td>'+est+'</td>'+
         '<td class="col-hide-sm" style="font-size:11px;color:var(--txt-soft);">'+esc(e.entregado_por)+'</td>'+
@@ -212,7 +189,6 @@ function cargarEconomia(){
   fetch('api_reportes.php?accion=stats_economia')
   .then(r=>r.json()).then(function(d){
     set('ec-ingresos',  'Bs. '+fmt(d.ingresos));
-    set('ec-productos', 'Bs. '+fmt(d.productos));
     set('ec-ofrendas',  'Bs. '+fmt(d.ofrendas));
     set('ec-gastos',    'Bs. '+fmt(d.gastos));
   });
@@ -224,20 +200,17 @@ function cargarVistaEconomia(){
   var accionMap = {
     iglesia:  'rec_por_iglesia',
     distrito: 'rec_por_distrito',
-    metodo:   'rec_por_metodo',
-    producto: 'rec_por_producto'
+    metodo:   'rec_por_metodo'
   };
   var titulosMap = {
     iglesia:  '<i class="fa-solid fa-church"></i> Recaudado por Iglesia',
     distrito: '<i class="fa-solid fa-map"></i> Recaudado por Distrito',
-    metodo:   '<i class="fa-solid fa-credit-card"></i> Recaudado por Método de Pago',
-    producto: '<i class="fa-solid fa-shirt"></i> Dinero por Producto'
+    metodo:   '<i class="fa-solid fa-credit-card"></i> Recaudado por Método de Pago'
   };
   var headMap = {
     iglesia:  '<tr><th>Iglesia</th><th>Inscritos</th><th>Recaudado (Bs.)</th></tr>',
     distrito: '<tr><th>Distrito</th><th>Inscritos</th><th>Recaudado (Bs.)</th></tr>',
-    metodo:   '<tr><th>Método</th><th>Total</th><th>Recaudado (Bs.)</th></tr>',
-    producto: '<tr><th>Producto</th><th>Cantidad</th><th>Total (Bs.)</th><th>Entregados</th></tr>'
+    metodo:   '<tr><th>Método</th><th>Total</th><th>Recaudado (Bs.)</th></tr>'
   };
 
   var tit = document.getElementById('ec-tabla-titulo');
@@ -256,31 +229,18 @@ function cargarVistaEconomia(){
     var suma = 0;
     var html = '';
 
-    if(vista === 'producto'){
-      suma = rows.reduce(function(s,r){ return s+r.total_dinero; },0);
-      html = rows.map(function(r){
-        return '<tr>'+
-          '<td style="font-weight:600;">'+esc(r.producto)+'</td>'+
-          '<td>'+r.cantidad_total+'</td>'+
-          '<td style="font-weight:700;color:var(--green);">Bs. '+fmt(r.total_dinero)+'</td>'+
-          '<td>'+r.entregados+'</td>'+
-        '</tr>';
-      }).join('');
-      html += '<tr style="font-weight:700;background:var(--bg);"><td colspan="2">Total</td><td colspan="2">Bs. '+fmt(suma)+'</td></tr>';
-    } else {
-      var campoMonto = (vista==='metodo') ? 'recaudado' : 'recaudado';
-      var campoNum   = (vista==='metodo') ? 'total' : 'inscritos';
-      var campoNom   = vista;
-      suma = rows.reduce(function(s,r){ return s+r[campoMonto]; },0);
-      html = rows.map(function(r){
-        return '<tr>'+
-          '<td style="font-weight:600;">'+esc(r[campoNom]||r.metodo||'—')+'</td>'+
-          '<td>'+r[campoNum]+'</td>'+
-          '<td style="font-weight:700;color:var(--green);">Bs. '+fmt(r[campoMonto])+'</td>'+
-        '</tr>';
-      }).join('');
-      html += '<tr style="font-weight:700;background:var(--bg);"><td colspan="2">Total</td><td>Bs. '+fmt(suma)+'</td></tr>';
-    }
+    var campoMonto = 'recaudado';
+    var campoNum   = (vista==='metodo') ? 'total' : 'inscritos';
+    var campoNom   = vista;
+    suma = rows.reduce(function(s,r){ return s+r[campoMonto]; },0);
+    html = rows.map(function(r){
+      return '<tr>'+
+        '<td style="font-weight:600;">'+esc(r[campoNom]||r.metodo||'—')+'</td>'+
+        '<td>'+r[campoNum]+'</td>'+
+        '<td style="font-weight:700;color:var(--green);">Bs. '+fmt(r[campoMonto])+'</td>'+
+      '</tr>';
+    }).join('');
+    html += '<tr style="font-weight:700;background:var(--bg);"><td colspan="2">Total</td><td>Bs. '+fmt(suma)+'</td></tr>';
 
     tb.innerHTML = html;
     var pie = document.getElementById('ec-suma-pie');
@@ -464,11 +424,6 @@ function val(id){ var el=document.getElementById(id); return el?el.value.trim():
 function fmt(n){ return parseFloat(n||0).toFixed(2); }
 function hoy(){ return new Date().toISOString().substring(0,10); }
 function encDat(obj){ return '\''+encodeURIComponent(JSON.stringify(obj))+'\''; }
-function genIcon(g){
-  if(g==='mujer')  return '<i class="fa-solid fa-venus" style="color:#e879a0;"></i>';
-  if(g==='unisex') return '<i class="fa-solid fa-circle" style="color:#8b5cf6;"></i>';
-  return '<i class="fa-solid fa-mars" style="color:#4f90d4;"></i>';
-}
 function tr(cols){ return '<tr>'+cols.map(function(c){ return '<td>'+esc(String(c??'—'))+'</td>'; }).join('')+'</tr>'; }
 function toast(msg,tipo){
   var el=document.getElementById('toast-reportes'); if(!el) return;

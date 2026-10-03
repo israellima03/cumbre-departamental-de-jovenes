@@ -206,24 +206,12 @@ if($res) while($r = $res->fetch_assoc()) $eventos_lista[] = $r;
 
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
-  #tbody-eventos-preguntas tr td:nth-child(6),
-  #tbody-eventos-preguntas thead th:nth-child(6) { display: none; } /* tema */
-
-  #tbody-preguntas tr td:nth-child(5),
-  #tbody-preguntas thead th:nth-child(5) { display: none; } /* fecha */
-
   .page-header { flex-direction: column; align-items: flex-start; }
   .page-header > div:last-child { width: 100%; }
   .page-header > div:last-child a { flex: 1; justify-content: center; }
 }
 
 @media (max-width: 480px) {
-  #tbody-eventos-preguntas tr td:nth-child(5),
-  #tbody-eventos-preguntas thead th:nth-child(5) { display: none; } /* expositor */
-
-  #tbody-preguntas tr td:nth-child(2),
-  #tbody-preguntas thead th:nth-child(2) { display: none; } /* evento */
-
   .filtros-rapidos { flex-direction: column; }
   .filtros-rapidos .select-filtro { width: 100%; min-width: unset; }
 }

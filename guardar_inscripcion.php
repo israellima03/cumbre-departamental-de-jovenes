@@ -173,17 +173,14 @@ switch ($accion) {
         $nombre      = limpiar($_POST['nombre']           ?? '');
         $apellido    = limpiar($_POST['apellido']         ?? '');
         $carnet      = limpiar($_POST['carnet']           ?? '');
-        $fecha_nac   = limpiar($_POST['fecha_nacimiento'] ?? '');
         $edad        = intval($_POST['edad']              ?? 0);
         $celular     = limpiar($_POST['celular']          ?? '');
-        $min_id      = intval($_POST['ministerio_id']     ?? 0);
         $igl_id      = intval($_POST['iglesia_id']        ?? 0);
         $dis_id      = intval($_POST['distrito_id']       ?? 0);
         $tipo_id     = intval($_POST['tipo_inscrito_id']  ?? 0);
         $paquete_id  = intval($_POST['paquete_id']        ?? 0);
         $regalo_id   = intval($_POST['regalo_id']         ?? 0);
         $comprobante = limpiar($_POST['comprobante_arch'] ?? '');
-        $prod_json   = $_POST['productos_json']           ?? '[]';
 
         /* validacion basica */
         if (!$nombre || !$apellido || !$carnet || !$celular || !$paquete_id || !$comprobante) {
@@ -191,11 +188,7 @@ switch ($accion) {
             exit;
         }
 
-        /* si iglesia o distrito no llegaron, derivarlos del ministerio */
-        if (!$igl_id && $min_id) {
-            $r = $conn->query("SELECT iglesia_id FROM ministerios WHERE id = $min_id LIMIT 1")->fetch_assoc();
-            $igl_id = $r ? intval($r['iglesia_id']) : 0;
-        }
+        /* si el distrito no llego, derivarlo de la iglesia */
         if (!$dis_id && $igl_id) {
             $r = $conn->query("SELECT distrito_id FROM iglesias WHERE id = $igl_id LIMIT 1")->fetch_assoc();
             $dis_id = $r ? intval($r['distrito_id']) : 0;
@@ -230,24 +223,8 @@ switch ($accion) {
         $descuento    = round($precio_orig - $precio_paq_f, 2);
         $stmtP->close();
 
-        /* calcular precio productos */
-        $precio_productos = 0.0;
-        $productos = json_decode($prod_json, true) ?: [];
-        foreach ($productos as $prod) {
-            $pid  = intval($prod['id']       ?? 0);
-            $cant = intval($prod['cantidad'] ?? 0);
-            if ($pid > 0 && $cant > 0) {
-                $stmtPr = $conn->prepare("SELECT precio FROM productos WHERE id = ?");
-                $stmtPr->bind_param('i', $pid);
-                $stmtPr->execute();
-                $pr = $stmtPr->get_result()->fetch_assoc();
-                if ($pr) $precio_productos += floatval($pr['precio']) * $cant;
-                $stmtPr->close();
-            }
-        }
-
         /* precio final total */
-        $precio_final_total = round($precio_paq_f + $precio_productos, 2);
+        $precio_final_total = round($precio_paq_f, 2);
 
         /* ══ INICIO TRANSACCION — si algo falla se revierte todo ══ */
         $conn->begin_transaction();
@@ -255,24 +232,18 @@ switch ($accion) {
         try {
 
             /* -- 1. INSERTAR INSCRITO -- */
-            /*
-             * bind_param tipos (10 params):
-             * s=nombre, s=apellido, s=carnet, s=fecha_nac,
-             * i=edad,   s=celular,
-             * i=min_id, i=igl_id, i=dis_id, i=tipo_id
-             * cadena: s s s s i s i i i i  →  'ssssisiii'  (4s+1i+1s+4i = 10)
-             */
+            /* bind_param tipos: s=nombre, s=apellido, s=carnet, i=edad, s=celular,
+               i=igl_id, i=dis_id, i=tipo_id  →  'sssisiii' */
             $stmtI = $conn->prepare("
                 INSERT INTO inscritos
-                    (nombre, apellido, carnet, fecha_nacimiento, edad, celular,
-                     ministerio_id, iglesia_id, distrito_id, tipo_inscrito_id)
-                VALUES (?,?,?,?,?,?,?,?,?,?)
+                    (nombre, apellido, carnet, edad, celular,
+                     iglesia_id, distrito_id, tipo_inscrito_id)
+                VALUES (?,?,?,?,?,?,?,?)
             ");
             $stmtI->bind_param(
-                'ssssissiii',
-                $nombre, $apellido, $carnet, $fecha_nac,
-                $edad, $celular,
-                $min_id, $igl_id, $dis_id, $tipo_id
+                'sssisiii',
+                $nombre, $apellido, $carnet, $edad, $celular,
+                $igl_id, $dis_id, $tipo_id
             );
             if (!$stmtI->execute()) {
                 throw new RuntimeException('Error al guardar inscrito: ' . $stmtI->error);
@@ -281,26 +252,20 @@ switch ($accion) {
             $stmtI->close();
 
             /* -- 2. INSERTAR INSCRIPCION -- */
-            /*
-             * bind_param tipos (8 params):
-             * i=inscrito_id, i=paquete_id,
-             * d=precio_orig, d=precio_paq_f, d=precio_productos,
-             * d=descuento,   d=precio_final_total,
-             * s=comprobante
-             * cadena: i i d d d d d s  →  'iidddds'
-             */
+            /* bind_param tipos: i=inscrito_id, i=paquete_id, d=precio_orig,
+               d=precio_paq_f, d=descuento, d=precio_final_total, s=comprobante  →  'iidddds' */
             $stmtIn = $conn->prepare("
                 INSERT INTO inscripciones
                     (inscrito_id, paquete_id,
-                     precio_original, precio_paquete, precio_productos,
+                     precio_original, precio_paquete,
                      descuento_aplicado, precio_final,
                      metodo_pago, estado_pago, comprobante_qr, fecha_pago)
-                VALUES (?,?,?,?,?,?,?,'qr','pendiente',?,NOW())
+                VALUES (?,?,?,?,?,?,'qr','pendiente',?,NOW())
             ");
             $stmtIn->bind_param(
-                'iiddddds',
+                'iidddds',
                 $inscrito_id, $paquete_id,
-                $precio_orig, $precio_paq_f, $precio_productos,
+                $precio_orig, $precio_paq_f,
                 $descuento, $precio_final_total,
                 $comprobante
             );
@@ -310,36 +275,7 @@ switch ($accion) {
             $inscripcion_id = $conn->insert_id;
             $stmtIn->close();
 
-            /* -- 3. INSERTAR PRODUCTOS -- */
-            foreach ($productos as $prod) {
-                $pid    = intval($prod['id']       ?? 0);
-                $cant   = intval($prod['cantidad'] ?? 0);
-                $talla  = limpiar($prod['talla']   ?? '');
-                $genero = trim(strtolower($prod['genero'] ?? 'hombre'));
-                if(!in_array($genero, ['hombre','mujer','unisex'])) $genero = 'hombre';
-
-                if ($pid > 0 && $cant > 0) {
-                    $stmtProd = $conn->prepare("
-                        INSERT INTO inscripcion_productos
-                            (inscripcion_id, producto_id, cantidad, talla, genero, producto_entregado, producto_entregado_por)
-                        VALUES (?,?,?,?,?,0,NULL)
-                    ");
-                    if ($stmtProd) {
-                        $stmtProd->bind_param('iiiss', $inscripcion_id, $pid, $cant, $talla, $genero);
-                        if (!$stmtProd->execute()) {
-                            throw new RuntimeException('Error al guardar producto: ' . $stmtProd->error);
-                        }
-                        $stmtProd->close();
-                    }
-                    $conn->query("
-                        UPDATE productos
-                        SET cupos_disponibles = cupos_disponibles - $cant
-                        WHERE id = $pid AND cupos_disponibles >= $cant
-                    ");
-                }
-            }
-
-            /* -- 4. INSERTAR REGALO -- */
+            /* -- 3. INSERTAR REGALO -- */
             if ($regalo_id > 0) {
                 $stmtR = $conn->prepare("
                     INSERT INTO inscripcion_regalos (inscripcion_id, regalo_id, material_entregado, material_entregado_por)
@@ -357,7 +293,7 @@ switch ($accion) {
                 ");
             }
 
-            /* -- 5. DESCONTAR CUPO PAQUETE -- */
+            /* -- 4. DESCONTAR CUPO PAQUETE -- */
             $conn->query("
                 UPDATE paquetes
                 SET cupos_disponibles = cupos_disponibles - 1
@@ -409,7 +345,7 @@ switch ($accion) {
 
         $archivoAdjunto = $rutaComprimida ?? $rutaArchivo;
 
-        $asunto_correo = 'Nuevo comprobante — Encuentro Departamental';
+        $asunto_correo = 'Nuevo pago por QR — Cumbre Departamental';
 
         $cuerpo_texto =
             "Inscripcion recibida:\n" .
@@ -417,7 +353,6 @@ switch ($accion) {
             "Carnet:           $carnet\n" .
             "Celular:          $celular\n" .
             "Paquete:          Bs. " . number_format($precio_paq_f, 2)       . "\n" .
-            "Productos:        Bs. " . number_format($precio_productos, 2)   . "\n" .
             "Descuento:        Bs. " . number_format($descuento, 2)          . "\n" .
             "TOTAL:            Bs. " . number_format($precio_final_total, 2) . "\n" .
             "Estado de pago:   PENDIENTE\n" .
@@ -426,9 +361,9 @@ switch ($accion) {
 
         $cuerpo_html = "
         <div style='font-family:Arial,sans-serif;max-width:580px;margin:0 auto;'>
-            <div style='background:#03045e;padding:18px;text-align:center;'>
+            <div style='background:#2C2668;padding:18px;text-align:center;'>
                 <h2 style='color:#fff;margin:0;font-size:18px;'>Nuevo Comprobante de Pago</h2>
-                <p style='color:#90e0ef;margin:4px 0 0;font-size:13px;'>Encuentro Departamental</p>
+                <p style='color:#E8750A;margin:4px 0 0;font-size:13px;'>Cumbre Departamental de Jóvenes</p>
             </div>
             <div style='padding:20px;background:#f8f9fa;'>
                 <table style='width:100%;border-collapse:collapse;font-size:14px;'>
@@ -448,17 +383,13 @@ switch ($accion) {
                         <td style='padding:8px;font-weight:bold;color:#666;'>Precio paquete</td>
                         <td style='padding:8px;'>Bs. " . number_format($precio_paq_f, 2) . "</td>
                     </tr>
-                    <tr>
-                        <td style='padding:8px;font-weight:bold;color:#666;'>Precio productos</td>
-                        <td style='padding:8px;'>Bs. " . number_format($precio_productos, 2) . "</td>
-                    </tr>
                     <tr style='background:#fff;'>
                         <td style='padding:8px;font-weight:bold;color:#666;'>Descuento</td>
                         <td style='padding:8px;color:#2e7d32;'>- Bs. " . number_format($descuento, 2) . "</td>
                     </tr>
                     <tr>
-                        <td style='padding:8px;font-weight:bold;color:#03045e;font-size:15px;'>TOTAL</td>
-                        <td style='padding:8px;font-size:15px;font-weight:bold;color:#03045e;'>Bs. " . number_format($precio_final_total, 2) . "</td>
+                        <td style='padding:8px;font-weight:bold;color:#2C2668;font-size:15px;'>TOTAL</td>
+                        <td style='padding:8px;font-size:15px;font-weight:bold;color:#2C2668;'>Bs. " . number_format($precio_final_total, 2) . "</td>
                     </tr>
                     <tr style='background:#fff;'>
                         <td style='padding:8px;font-weight:bold;color:#666;'>Estado de pago</td>
@@ -480,7 +411,7 @@ switch ($accion) {
                 </table>
                 <div style='background:#fff3cd;border-left:4px solid #f59e0b;padding:12px;margin-top:15px;font-size:13px;'>
                     <strong>Accion requerida:</strong>
-                    Verifica el comprobante adjunto y confirma la inscripcion en el sistema.
+                    Verifica el comprobante adjunto y confirma la inscripcion en el panel de administracion, seccion <strong>Confirmar QR</strong>.
                 </div>
             </div>
             <div style='background:#e1e1e1;padding:10px;text-align:center;font-size:11px;color:#666;'>
@@ -500,7 +431,7 @@ switch ($accion) {
             $mail->CharSet    = 'UTF-8';
             $mail->Timeout    = 10;
 
-            $mail->setFrom('mjoruro413@gmail.com', 'Sistema Encuentro');
+            $mail->setFrom('mjoruro413@gmail.com', 'Sistema Cumbre');
             $mail->addAddress(TESORERA_EMAIL, 'Tesorera');
             $mail->Subject = $asunto_correo;
             $mail->isHTML(true);
@@ -528,130 +459,15 @@ switch ($accion) {
 
         echo json_encode([
             'ok'  => true,
-            'msg' => 'Tu inscripcion fue recibida. Estado: PENDIENTE. La tesorera revisara tu comprobante.'
+            'msg' => 'Tu inscripcion fue recibida. Estado: PENDIENTE. La tesorera revisara tu comprobante y la confirmara desde el panel.'
         ]);
         exit;
     
 
 
     /* ================================================================
-       LISTAR TALLAS POR PRODUCTO Y GÉNERO (para registro público)
+       ACCION NO RECONOCIDA
        ================================================================ */
-    case 'listar_tallas_publico':
-        $pid    = intval($_POST['producto_id'] ?? 0);
-        $genero = trim($_POST['genero'] ?? 'hombre');
-        if(!$pid){ echo json_encode(['ok'=>false]); exit; }
-
-        /* intentar buscar por el genero pedido, si no hay buscar unisex */
-        $stmt = $conn->prepare("SELECT talla, ancho_cm, alto_cm, genero FROM producto_tallas WHERE producto_id=? AND genero=? ORDER BY id");
-        $stmt->bind_param('is', $pid, $genero);
-        $stmt->execute();
-        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-
-        /* si no trajo nada, intentar con unisex */
-        if(empty($rows)){
-            $stmt2 = $conn->prepare("SELECT talla, ancho_cm, alto_cm, genero FROM producto_tallas WHERE producto_id=? AND genero='unisex' ORDER BY id");
-            $stmt2->bind_param('i', $pid);
-            $stmt2->execute();
-            $rows = $stmt2->get_result()->fetch_all(MYSQLI_ASSOC);
-            $stmt2->close();
-        }
-
-        echo json_encode(['ok'=>true, 'tallas'=>$rows]);
-        exit; 
-
-    /* ── BUSCAR INSCRITO PARA EQUIPO ── */
-    case 'buscar_inscrito_equipo':
-        $q = '%' . trim($_POST['q'] ?? '') . '%';
-        $stmt = $conn->prepare("
-            SELECT i.id, i.nombre, i.apellido, i.carnet
-            FROM inscritos i
-            INNER JOIN inscripciones ins ON ins.inscrito_id = i.id
-            WHERE (i.nombre LIKE ? OR i.apellido LIKE ? OR i.carnet LIKE ?)
-            AND ins.estado_pago = 'confirmado'
-            LIMIT 6
-        ");
-        $stmt->bind_param('sss', $q, $q, $q);
-        $stmt->execute();
-        $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-        echo json_encode(['ok' => true, 'inscritos' => $rows]);
-        exit;
-
-    /* ── VERIFICAR NOMBRE EQUIPO ── */
-    case 'verificar_nombre_equipo':
-        $nombre = trim($_POST['nombre'] ?? '');
-        $stmt = $conn->prepare("SELECT id FROM equipos_deportivos WHERE LOWER(nombre_equipo) = LOWER(?) LIMIT 1");
-        $stmt->bind_param('s', $nombre);
-        $stmt->execute();
-        $stmt->store_result();
-        $disponible = $stmt->num_rows === 0;
-        $stmt->close();
-        echo json_encode(['disponible' => $disponible]);
-        exit;
-
-    /* ── REGISTRAR EQUIPO ── */
-    case 'registrar_equipo':
-        $inscrito_id = intval($_POST['inscrito_id'] ?? 0);
-        $nombre      = trim($_POST['nombre'] ?? '');
-
-        if(!$inscrito_id || strlen($nombre) < 3){
-            echo json_encode(['ok'=>false,'msg'=>'Datos incompletos']);
-            exit;
-        }
-
-        /* verificar que esté inscrito y confirmado */
-        $stmt = $conn->prepare("
-            SELECT i.id FROM inscritos i
-            INNER JOIN inscripciones ins ON ins.inscrito_id = i.id
-            WHERE i.id = ? AND ins.estado_pago = 'confirmado'
-            LIMIT 1
-        ");
-        $stmt->bind_param('i', $inscrito_id);
-        $stmt->execute();
-        $stmt->store_result();
-        if($stmt->num_rows === 0){
-            echo json_encode(['ok'=>false,'msg'=>'Solo los inscritos confirmados pueden registrar un equipo.']);
-            $stmt->close(); exit;
-        }
-        $stmt->close();
-
-        /* verificar que no tenga ya un equipo */
-        $stmt2 = $conn->prepare("SELECT id FROM equipos_deportivos WHERE inscrito_id = ? LIMIT 1");
-        $stmt2->bind_param('i', $inscrito_id);
-        $stmt2->execute();
-        $stmt2->store_result();
-        if($stmt2->num_rows > 0){
-            echo json_encode(['ok'=>false,'msg'=>'Este inscrito ya tiene un equipo registrado.']);
-            $stmt2->close(); exit;
-        }
-        $stmt2->close();
-    
-        /* verificar nombre duplicado */
-        $stmt3 = $conn->prepare("SELECT id FROM equipos_deportivos WHERE LOWER(nombre_equipo) = LOWER(?) LIMIT 1");
-        $stmt3->bind_param('s', $nombre);
-        $stmt3->execute();
-        $stmt3->store_result();
-        if($stmt3->num_rows > 0){
-            echo json_encode(['ok'=>false,'msg'=>'Ese nombre de equipo ya está registrado. Elige otro.']);
-            $stmt3->close(); exit;
-        }
-        $stmt3->close();
-
-        /* insertar */
-        $stmt4 = $conn->prepare("INSERT INTO equipos_deportivos (nombre_equipo, inscrito_id) VALUES (?, ?)");
-        $stmt4->bind_param('si', $nombre, $inscrito_id);
-        if($stmt4->execute()){
-            echo json_encode(['ok'=>true,'msg'=>'Equipo registrado']);
-        } else {
-            echo json_encode(['ok'=>false,'msg'=>'Error al registrar el equipo.']);
-        }
-        $stmt4->close();
-        exit;
-        /* ================================================================
-           ACCION NO RECONOCIDA
-           ================================================================ */
     default:
         echo json_encode(['ok' => false, 'msg' => 'Accion no valida']);
         exit;

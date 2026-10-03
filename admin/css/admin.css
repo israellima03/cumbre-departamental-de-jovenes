@@ -7,38 +7,39 @@
 
 :root {
   --sidebar-w:     245px;
-  --sidebar-bg:    #03045e;
+  --sidebar-bg:    #2C2668;
   --sidebar-hover: rgba(255,255,255,.08);
-  --sidebar-active:#da002b;
-  --accent:        #da002b;
-  --accent2:       #0089e4;
+  --sidebar-active:#E8750A;
+  --accent:        #E8750A;
+  --accent2:       #652C2A;
 
-  --bg:            #f0f2f8;
+  --bg:            #F4F2F0;
   --card-bg:       #ffffff;
   --topbar-bg:     #ffffff;
-  --border:        #e4e8f0;
+  --border:        #E7E2DF;
 
-  --txt:           #1a1d2e;
-  --txt-soft:      #6b7280;
-  --txt-xsoft:     #9ca3af;
+  --txt:           #2C2668;
+  --txt-soft:      #5C625B;
+  --txt-xsoft:     #8a827e;
 
-  --blue:          #0089e4;
-  --blue-light:    #e8f4fd;
+  --blue:          #5C625B;
+  --blue-light:    #E7E2DF;
   --orange:        #f59e0b;
   --orange-light:  #fef3c7;
   --green:         #10b981;
   --green-light:   #d1fae5;
-  --purple:        #8b5cf6;
-  --purple-light:  #ede9fe;
-  --red:           #da002b;
+  --purple:        #652C2A;
+  --purple-light:  #f1e4e3;
+  --red:           #b42318;
 
   --radius:        12px;
   --radius-sm:     8px;
   --shadow:        0 2px 12px rgba(0,0,0,.08);
   --shadow-md:     0 4px 24px rgba(0,0,0,.12);
 
-  --font-body:     'Plus Jakarta Sans', sans-serif;
-  --font-display:  'Syne', sans-serif;
+  --font-body:     'Montserrat', sans-serif;
+  --font-display:  'Oswald', sans-serif;
+  --font-titulo:   'Anton', 'Oswald', sans-serif;
 
   --transition:    .22s cubic-bezier(.4,0,.2,1);
 }
@@ -213,7 +214,7 @@ body { display: flex; min-height: 100vh; }
   border-radius: var(--radius-sm);
   transition: all var(--transition);
 }
-.btn-cerrar-sesion:hover { background: rgba(218,0,43,.2); color: #ff6b6b; }
+.btn-cerrar-sesion:hover { background: rgba(232,117,10,.2); color: #ff6b6b; }
 
 /* collapsed sidebar */
 body.sidebar-collapsed .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
@@ -738,7 +739,7 @@ body.sidebar-collapsed .main-wrapper { margin-left: 0; }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(3,4,94,.45);
+  background: rgba(44,38,104,.45);
   backdrop-filter: blur(4px);
   z-index: 200;
   display: none;
@@ -953,11 +954,7 @@ body.sidebar-collapsed .main-wrapper { margin-left: 0; }
 }
  
 /* ── Responsive tabla ── */
-@media(max-width:900px){
-  .col-usuario { display:none; }
-}
 @media(max-width:700px){
-  .col-productos { display:none; }
   .btn-txt-label { display:none; }
   .stat-num { font-size:22px; }
   #btn-nueva-inscripcion .btn-txt-label { display:inline; }
@@ -974,28 +971,9 @@ body.sidebar-collapsed .main-wrapper { margin-left: 0; }
 /* ── TABLA RESPONSIVA EN MÓVIL ── */
 @media (max-width: 768px) {
 
-  /* ocultar columnas menos importantes */
-  .tabla-inscritos thead th:nth-child(7),  /* Productos */
-  .tabla-inscritos tbody td:nth-child(7),
-  .tabla-inscritos thead th:nth-child(13), /* Registró */
-  .tabla-inscritos tbody td:nth-child(13),
-  .tabla-inscritos thead th:nth-child(14), /* Confirmó */
-  .tabla-inscritos tbody td:nth-child(14) {
-    display: none;
-  }
 }
 
 @media (max-width: 540px) {
-
-  /* ocultar más columnas en móvil pequeño */
-  .tabla-inscritos thead th:nth-child(4),  /* Iglesia */
-  .tabla-inscritos tbody td:nth-child(4),
-  .tabla-inscritos thead th:nth-child(5),  /* Distrito */
-  .tabla-inscritos tbody td:nth-child(5),
-  .tabla-inscritos thead th:nth-child(12), /* Fecha */
-  .tabla-inscritos tbody td:nth-child(12) {
-    display: none;
-  }
 
   /* compactar celdas visibles */
   .tabla-inscritos tbody td,
@@ -1161,14 +1139,6 @@ body.sidebar-collapsed .main-wrapper { margin-left: 0; }
 /* ══ TABLA RESPONSIVA — ACCIONES SIEMPRE VISIBLES ══ */
 @media (max-width: 768px) {
   .tabla-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .tabla-inscritos { min-width: 600px; }
-  .tabla-inscritos thead th:last-child,
-  .tabla-inscritos tbody td:last-child {
-    position: sticky; right: 0;
-    background: var(--card-bg);
-    box-shadow: -2px 0 6px rgba(0,0,0,.1);
-  }
-  .tabla-inscritos thead th:last-child { background: var(--sidebar-bg); }
   .stats-grid { grid-template-columns: repeat(2,1fr) !important; gap: 12px; }
   .page-header { flex-direction: column; align-items: flex-start; }
   #btn-nueva-inscripcion { width: 100%; justify-content: center; }
@@ -1204,4 +1174,25 @@ body.sidebar-collapsed .main-wrapper { margin-left: 0; }
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   max-width: 100%;
+}
+/* ── IDENTIDAD CUMBRE ── */
+.page-title,
+.brand-name { font-family: var(--font-titulo); font-weight: 400; letter-spacing: .5px; }
+.page-title span { color: var(--accent); }
+
+/* ── TABLAS EN CELULAR: todas las columnas visibles con scroll horizontal ── */
+.main-wrapper, .content { min-width: 0; }
+@media (max-width: 900px) {
+  .tabla-wrap {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  .tabla-wrap > table { width: max-content; min-width: 100%; }
+  .tabla-wrap th,
+  .tabla-wrap td { white-space: nowrap; }
+  .tabla-wrap td .pregunta-txt,
+  .tabla-wrap td.col-desc { white-space: normal; min-width: 220px; }
 }

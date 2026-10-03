@@ -14,7 +14,7 @@ document.querySelectorAll('.form-pregunta').forEach(function(form){
             var len = this.value.length;
             contador.textContent = len + ' / 500';
             /* cambia color cuando se acerca al limite */
-            contador.style.color = len > 450 ? '#da002b' : '#999';
+            contador.style.color = len > 450 ? '#E8750A' : '#999';
         });
     }
 
@@ -30,7 +30,7 @@ document.querySelectorAll('.form-pregunta').forEach(function(form){
 
         /* validacion */
         if(!pregunta){
-            if(textarea) textarea.style.borderColor = '#da002b';
+            if(textarea) textarea.style.borderColor = '#E8750A';
             mostrarMsg(msgDiv, 'Escribe tu pregunta antes de enviar.', 'error');
             return;
         }

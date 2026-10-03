@@ -85,7 +85,7 @@
 }
 .com-field-full { grid-column: span 2; }
 .com-input      { width: 100%; margin-top: 6px; }
-.com-err  { font-size: 11px; color: #da002b; display: none; margin-top: 3px; }
+.com-err  { font-size: 11px; color: #E8750A; display: none; margin-top: 3px; }
 .com-hint { font-size: 10px; color: var(--txt-xsoft); margin-top: 3px; display: block; }
 
 .com-icono-row {
@@ -164,7 +164,7 @@
   font-size: 13px;
 }
 .enc-vacio-icono { display: block; font-size: 26px; margin-bottom: 8px; }
-.enc-error { text-align: center; color: #da002b; padding: 16px; font-size: 13px; }
+.enc-error { text-align: center; color: #E8750A; padding: 16px; font-size: 13px; }
 
 .enc-form-wrap {
   background: var(--bg);
