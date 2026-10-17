@@ -274,6 +274,9 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
                     <strong><?php echo htmlspecialchars($paq['nombre']); ?></strong><br>
                     <small>Bs. <?php echo number_format($paq['precio_final'],2); ?>
                       — <?php echo $paq['cupos_disponibles']; ?> cupos</small>
+                    <?php if(stripos($paq['nombre'], 'aliment') !== false): ?>
+                      <br><small style="color:#b45309;font-weight:700;"><i class="fa-solid fa-hourglass-half"></i> Activo hasta el 31 de octubre</small>
+                    <?php endif; ?>
                   </span>
                 </label>
               <?php endforeach; ?>
@@ -296,7 +299,11 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
             <strong>debe entregar el dinero a la hermana Jael</strong>.
             La inscripción quedará <strong>PENDIENTE</strong> hasta que tesorería confirme el pago
             en <strong>Confirmar Inscripciones → Confirmar Efectivo</strong>.
-            Esta inscripción no podrá ser eliminada.
+          </p>
+          <p style="font-size:13px;color:#991b1b;margin-top:8px;font-weight:600;">
+            <i class="fa-solid fa-clock"></i>
+            El pago debe entregarse lo antes posible. Si no se paga, tesorería eliminará
+            la inscripción y el cupo se liberará para otra persona.
           </p>
         </div>
       </div>

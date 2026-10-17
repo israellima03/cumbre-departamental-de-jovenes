@@ -128,6 +128,11 @@ if($res) while($r = $res->fetch_assoc()) $lideres_dep[] = $r;
         <i class="fa-solid fa-triangle-exclamation"></i>
         Solo tu líder puede completar el registro en efectivo.
       </div>
+      <div class="aviso-efectivo aviso-plazo">
+        <i class="fa-solid fa-clock"></i>
+        Tu inscripción en efectivo queda <strong>pendiente</strong> hasta que entregues el dinero.
+        Paga lo antes posible: si no pagas, tu cupo será liberado.
+      </div>
       <!-- BOTON LOGIN LIDERES -->
       <div class="bloque-login-lider">
         <div class="separador-login"></div>

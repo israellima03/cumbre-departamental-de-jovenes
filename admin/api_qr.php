@@ -6,8 +6,10 @@ require_once('../includes/funciones/bd_conexion.php');
 
 $accion = trim($_GET['accion'] ?? $_POST['accion'] ?? '');
 
-/* solo tesorera, administrador o lider departamental confirman pagos */
-$puede_confirmar = puede(['Administrador','tesorera','Lider departamental']);
+/* solo la tesorera y el administrador confirman pagos */
+$puede_confirmar = puede(['Administrador','tesorera']);
+/* solo la tesorera y el administrador eliminan inscripciones pendientes en efectivo */
+$puede_eliminar  = puede(['Administrador','tesorera']);
 
 switch($accion){
 
@@ -217,7 +219,50 @@ switch($accion){
             'pendientes'      => intval($conteos['pendientes']  ?? 0),
             'confirmados'     => intval($conteos['confirmados'] ?? 0),
             'puede_confirmar' => $puede_confirmar,
+            'puede_eliminar'  => $puede_eliminar,
         ]);
+        break;
+
+    /* ── ELIMINAR inscripción en efectivo pendiente (no pagó) y devolver cupos ── */
+    case 'eliminar_pendiente':
+        if(!$puede_eliminar){
+            echo json_encode(['ok'=>false,'msg'=>'Solo la tesorera o el administrador pueden eliminar inscripciones pendientes']);
+            exit;
+        }
+        $inscripcion_id = intval($_POST['inscripcion_id'] ?? 0);
+        $ins = $conn->query("
+            SELECT id, inscrito_id, paquete_id
+            FROM inscripciones
+            WHERE id = $inscripcion_id AND metodo_pago = 'efectivo' AND estado_pago = 'pendiente'
+            LIMIT 1
+        ")->fetch_assoc();
+        if(!$ins){
+            echo json_encode(['ok'=>false,'msg'=>'Solo se pueden eliminar inscripciones en efectivo pendientes']);
+            exit;
+        }
+        $inscrito_id = intval($ins['inscrito_id']);
+        $paquete_id  = intval($ins['paquete_id']);
+
+        $conn->begin_transaction();
+        try {
+            /* devolver cupo del regalo y del paquete */
+            $conn->query("UPDATE regalos r
+                INNER JOIN inscripcion_regalos ir ON ir.regalo_id = r.id
+                SET r.cupos_disponibles = r.cupos_disponibles + 1
+                WHERE ir.inscripcion_id = $inscripcion_id");
+            if($paquete_id){
+                $conn->query("UPDATE paquetes SET cupos_disponibles = cupos_disponibles + 1 WHERE id = $paquete_id");
+            }
+            $conn->query("DELETE FROM inscripcion_regalos WHERE inscripcion_id = $inscripcion_id");
+            $conn->query("DELETE FROM inscripciones WHERE id = $inscripcion_id");
+            $conn->query("DELETE FROM inscritos WHERE id = $inscrito_id");
+            $conn->commit();
+        } catch (Throwable $e) {
+            $conn->rollback();
+            echo json_encode(['ok'=>false,'msg'=>'No se pudo eliminar la inscripcion']);
+            exit;
+        }
+        echo json_encode(['ok'=>true,'msg'=>'Inscripcion eliminada y cupo devuelto']);
         break;
 
     default:

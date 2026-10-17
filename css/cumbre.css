@@ -524,3 +524,23 @@ span.tipo-evento-badge.tipo-conferencia { background: var(--gris); color: var(--
 span.tipo-evento-badge.tipo-predica,
 span.tipo-evento-badge.tipo-vigilia     { background: rgba(101,44,42,0.12); color: var(--vino); }
 span.tipo-evento-badge.tipo-taller      { background: rgba(232,117,10,0.14); color: var(--naranja-2); }
+
+/* ── AVISO DE VIGENCIA DE PAQUETE ── */
+.aviso-vigencia {
+  display: inline-block;
+  line-height: 1.4;
+  text-align: center;
+  margin: 10px auto 4px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(232,117,10,0.12);
+  border: 1px solid var(--naranja);
+  color: var(--naranja-2);
+  font-family: var(--f-info);
+  font-size: 0.82em;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.aviso-vigencia strong { color: var(--vino); }
+.aviso-vigencia i { margin-right: 4px; }
+.aviso-efectivo.aviso-plazo { margin-top: 10px; }

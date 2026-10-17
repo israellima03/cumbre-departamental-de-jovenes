@@ -222,13 +222,17 @@
           $color_cupo = $porc_cupos > 50 ? 'cupo-alto' : ($porc_cupos > 20 ? 'cupo-medio' : 'cupo-bajo');
           $bens       = $beneficios;
           /* el paquete con alimento incluye el almuerzo */
-          if(stripos($paq['nombre'], 'aliment') !== false) $bens[] = 'Almuerzo en el Hotel';
+          $con_alimento = stripos($paq['nombre'], 'aliment') !== false;
+          if($con_alimento) $bens[] = 'Almuerzo en el Hotel';
         ?>
           <li>
             <div class="tabla-precio <?php echo $agotado ? 'agotado' : ''; ?>">
 
               <!-- nombre del paquete -->
               <h3><?php echo htmlspecialchars($paq['nombre']); ?></h3>
+              <?php if($con_alimento): ?>
+                <div class="aviso-vigencia"><i class="fa-solid fa-hourglass-half"></i> Paquete activo hasta el <strong>31 de octubre</strong></div>
+              <?php endif; ?>
 
               <!-- precio con o sin descuento -->
               <?php if($con_desc): ?>

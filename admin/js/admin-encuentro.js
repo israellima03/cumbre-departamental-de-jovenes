@@ -446,7 +446,7 @@ function confirmarInscripcionEfectivo(){
     btnConf.disabled=false; btnConf.innerHTML='<i class="fa-solid fa-check"></i> Registrar Inscripción';
     if(data.ok){
       window.cerrarModalInscripcion();
-      toast('Inscripción registrada. Queda pendiente hasta que tesorería confirme el pago.','ok');
+      toast('Inscripción registrada como PENDIENTE. Entrega el dinero lo antes posible o el cupo será liberado.','ok');
       cargarInscritos(); cargarStats();
     } else toast(data.msg,'error');
   }).catch(function(){ toast('Error de conexion','error'); btnConf.disabled=false; });

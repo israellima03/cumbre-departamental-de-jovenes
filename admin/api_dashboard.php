@@ -129,7 +129,7 @@ switch($accion){
       $conn->query("UPDATE paquetes SET cupos_disponibles=cupos_disponibles-1 WHERE id=$paq_id AND cupos_disponibles>0");
       $conn->commit();
  
-      echo json_encode(['ok'=>true,'msg'=>'Inscripcion registrada. Queda PENDIENTE hasta que tesoreria confirme el pago.','inscrito_id'=>$inscrito_id]);
+      echo json_encode(['ok'=>true,'msg'=>'Inscripcion registrada. Queda PENDIENTE hasta que tesoreria confirme el pago. Si no se paga lo antes posible, el cupo sera liberado.','inscrito_id'=>$inscrito_id]);
  
     } catch(RuntimeException $e){
       $conn->rollback();

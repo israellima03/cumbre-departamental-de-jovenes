@@ -93,7 +93,7 @@ function renderTabla(){
   }).join('');
 
   tbodyAcc.innerHTML = pagina.map(function(ins, i){
-    var btnConf = ins.estado_pago === 'pendiente'
+    var btnConf = (ins.estado_pago === 'pendiente' && window.PUEDE_CONFIRMAR)
       ? '<button class="btn-accion btn-confirmar" onclick="abrirModal(' + (inicio+i) + ')"><i class="fa-solid fa-check"></i></button> '
       : '';
     return '<tr><td>' + btnConf +
@@ -207,7 +207,7 @@ window.abrirModal = function(idx){
 
     var btnConf = document.getElementById('btn-modal-qr-confirmar');
     if(btnConf){
-        btnConf.style.display = ins.estado_pago === 'pendiente' ? 'inline-flex' : 'none';
+        btnConf.style.display = (ins.estado_pago === 'pendiente' && window.PUEDE_CONFIRMAR) ? 'inline-flex' : 'none';
     }
 
     document.getElementById('modal-qr-overlay').classList.add('open');

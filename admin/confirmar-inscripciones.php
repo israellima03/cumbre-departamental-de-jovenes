@@ -221,5 +221,8 @@ include_once 'funciones/funciones.php';
 <!-- TOAST -->
 <div class="toast" id="toast-qr"></div>
 
+<script>
+  var PUEDE_CONFIRMAR = <?php echo puede(['Administrador','tesorera']) ? 'true' : 'false'; ?>;
+</script>
 <?php $js_pagina = ['confirmar-qr.js', 'confirmar-efectivo.js']; ?>
 <?php include_once 'templates/footer.php'; ?>

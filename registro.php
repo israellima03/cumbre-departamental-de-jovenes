@@ -151,6 +151,9 @@ if($res_r && $row_r = $res_r->fetch_assoc()){
                          <?php echo $agotado ? 'disabled' : ''; ?>>
                   <h3><?php echo htmlspecialchars($paq['nombre']); ?></h3>
                 </label>
+                <?php if(stripos($paq['nombre'], 'aliment') !== false): ?>
+                  <div class="aviso-vigencia"><i class="fa-solid fa-hourglass-half"></i> Paquete activo hasta el <strong>31 de octubre</strong></div>
+                <?php endif; ?>
 
                 <?php if($con_desc): ?>
                   <p class="precio-original">Bs. <?php echo number_format($paq['precio'],0); ?></p>
