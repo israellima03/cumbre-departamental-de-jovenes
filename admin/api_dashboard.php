@@ -247,7 +247,7 @@ switch($accion){
 function generarCredencialHTML($conn,$inscrito_id,$inscripcion_id){
   $r=$conn->query("
     SELECT i.nombre,i.apellido,i.carnet,i.celular,i.edad,
-           ins.precio_final,ins.metodo_pago,ins.estado_pago,ins.fecha_pago,
+           ins.codigo_qr,ins.precio_final,ins.metodo_pago,ins.estado_pago,ins.fecha_pago,
            p.nombre AS paquete,ig.nombre AS iglesia,d.nombre AS distrito,t.nombre AS tipo
     FROM inscritos i
     INNER JOIN inscripciones ins ON ins.id=$inscripcion_id
@@ -260,8 +260,12 @@ function generarCredencialHTML($conn,$inscrito_id,$inscripcion_id){
   if(!$r) return null;
 
   /* ── GENERAR CÓDIGO QR ÚNICO ── */
-  $codigo_qr = bin2hex(random_bytes(16)); // 32 caracteres únicos
-  $conn->query("UPDATE inscripciones SET codigo_qr='$codigo_qr' WHERE id=$inscripcion_id");
+  /* se conserva el código existente para que los QR ya descargados sigan válidos */
+  $codigo_qr = $r['codigo_qr'];
+  if(empty($codigo_qr)){
+    $codigo_qr = bin2hex(random_bytes(16)); // 32 caracteres únicos
+    $conn->query("UPDATE inscripciones SET codigo_qr='$codigo_qr' WHERE id=$inscripcion_id");
+  }
 
   /* URL que apunta al verificador */
   $base_url = 'https://mjoruro.com/ver-credencial.php?code=' . $codigo_qr;

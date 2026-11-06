@@ -1,0 +1,203 @@
+/* ============================================================
+   ESCANEAR CREDENCIAL
+   ============================================================ */
+.esc-punto {
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.esc-punto label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--txt);
+}
+.esc-punto .select-filtro {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.esc-sin-puntos {
+  font-size: 13px;
+  color: var(--txt-soft);
+}
+
+/* ── PASO 1: OPCIONES ── */
+.esc-opciones {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+.esc-opcion {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card-bg);
+  color: var(--txt);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+.esc-opcion i { color: var(--accent); font-size: 20px; flex-shrink: 0; }
+.esc-opcion span { min-width: 0; overflow-wrap: anywhere; }
+.esc-opcion:hover,
+.esc-opcion:focus-visible { border-color: var(--accent); background: var(--bg); }
+
+/* ── PASO 2: PUNTO ELEGIDO ── */
+.esc-actual {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  background: var(--sidebar-bg);
+  color: #fff;
+}
+.esc-actual div { min-width: 0; }
+.esc-actual span { display: block; font-size: 12px; opacity: .8; }
+.esc-actual strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+.esc-actual .btn-secondary { flex-shrink: 0; }
+
+.esc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.esc-bloque { padding: 20px; }
+.esc-bloque h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--txt);
+}
+.esc-bloque h3 i { color: var(--accent); }
+.esc-ayuda {
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--txt-soft);
+}
+
+#lector {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+#lector video { display: block; width: 100%; }
+#lector:not(:empty) { margin-bottom: 12px; }
+
+.esc-btn {
+  width: 100%;
+  justify-content: center;
+  min-height: 48px;
+  font-size: 15px;
+}
+.esc-aviso {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--red);
+}
+
+.esc-carnet { display: flex; gap: 8px; }
+.esc-carnet .input-filtro { min-width: 0; font-size: 16px; }
+.esc-carnet .btn-primary { flex-shrink: 0; }
+
+/* ── RESULTADO ── */
+.esc-resultado {
+  margin-bottom: 16px;
+  padding: 20px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card-bg);
+  box-shadow: var(--shadow);
+}
+.esc-res-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+.esc-ok      { border-color: var(--green);  background: var(--green-light); }
+.esc-ok .esc-res-titulo      { color: #065f46; }
+.esc-repetido { border-color: var(--orange); background: var(--orange-light); }
+.esc-repetido .esc-res-titulo { color: #92400e; }
+.esc-error   { border-color: var(--red);    background: #fee2e2; }
+.esc-error .esc-res-titulo   { color: #991b1b; }
+
+.esc-nombre {
+  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--txt);
+}
+.esc-datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+}
+.esc-registro {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(44,38,104,.2);
+}
+.esc-dato span {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--txt-soft);
+}
+.esc-dato strong {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  color: var(--txt);
+}
+.esc-resultado .esc-btn { margin-top: 16px; }
+
+/* ── FORMULARIO DE PUNTOS ── */
+.esc-form-punto {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px auto;
+  gap: 12px;
+  align-items: end;
+}
+.esc-form-punto .input-filtro { width: 100%; min-width: 0; }
+.esc-form-acciones { display: flex; gap: 8px; }
+
+@media (max-width: 768px) {
+  .esc-grid { grid-template-columns: minmax(0, 1fr); }
+  .esc-form-punto { grid-template-columns: minmax(0, 1fr); }
+  .esc-form-acciones .btn-primary { flex: 1; justify-content: center; }
+}
+@media (max-width: 420px) {
+  .esc-carnet { flex-direction: column; }
+  .esc-carnet .btn-primary { justify-content: center; min-height: 48px; }
+  .ci-tab { padding: 10px 6px; font-size: 12px; }
+}
+
+/* el atributo hidden debe ganarle al display de los botones y selects */
+#page-escanear [hidden] { display: none !important; }

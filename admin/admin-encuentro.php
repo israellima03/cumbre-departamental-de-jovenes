@@ -45,11 +45,16 @@ while($r = $res->fetch_assoc()) $distritos_modal[] = $r;
       <h1 class="page-title">Panel <span>Administrativo</span></h1>
       <p class="page-sub">Resumen logístico de la Cumbre Departamental de Jóvenes.</p>
     </div>
-    <?php if($puede_gestionar): ?>
-    <button class="btn-primary" id="btn-nueva-inscripcion">
-      <i class="fa-solid fa-plus"></i> <span class="btn-txt-label">Nueva Inscripción</span>
-    </button>
-    <?php endif; ?>
+    <div class="dash-acciones">
+      <a href="escanear.php" class="btn-primary" id="btn-escanear">
+        <i class="fa-solid fa-qrcode"></i> Escanear Credencial
+      </a>
+      <?php if($puede_gestionar): ?>
+      <button class="btn-primary" id="btn-nueva-inscripcion">
+        <i class="fa-solid fa-plus"></i> <span class="btn-txt-label">Nueva Inscripción</span>
+      </button>
+      <?php endif; ?>
+    </div>
   </div>
 
   <!-- STATS -->

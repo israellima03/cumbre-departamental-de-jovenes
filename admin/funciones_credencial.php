@@ -3,7 +3,7 @@ if(!function_exists('generarCredencialHTML')){
 function generarCredencialHTML($conn, $inscrito_id, $inscripcion_id){
   $r = $conn->query("
     SELECT i.nombre, i.apellido, i.carnet, i.celular, i.edad,
-           ins.precio_final, ins.metodo_pago, ins.estado_pago, ins.fecha_pago,
+           ins.codigo_qr, ins.precio_final, ins.metodo_pago, ins.estado_pago, ins.fecha_pago,
            p.nombre AS paquete, ig.nombre AS iglesia, d.nombre AS distrito,
            t.nombre AS tipo
     FROM inscritos i
@@ -16,8 +16,12 @@ function generarCredencialHTML($conn, $inscrito_id, $inscripcion_id){
   ")->fetch_assoc();
   if(!$r) return null;
 
-  $codigo_qr = bin2hex(random_bytes(16));
-  $conn->query("UPDATE inscripciones SET codigo_qr='$codigo_qr' WHERE id=$inscripcion_id");
+  /* se conserva el código existente para que los QR ya descargados sigan válidos */
+  $codigo_qr = $r['codigo_qr'];
+  if(empty($codigo_qr)){
+    $codigo_qr = bin2hex(random_bytes(16));
+    $conn->query("UPDATE inscripciones SET codigo_qr='$codigo_qr' WHERE id=$inscripcion_id");
+  }
 
   $base_url = 'https://mjoruro.com/ver-credencial.php?code=' . $codigo_qr;
   $qr_url   = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' . urlencode($base_url);

@@ -1196,3 +1196,11 @@ body.sidebar-collapsed .main-wrapper { margin-left: 0; }
   .tabla-wrap td .pregunta-txt,
   .tabla-wrap td.col-desc { white-space: normal; min-width: 220px; }
 }
+
+/* ── ACCIONES DEL DASHBOARD ── */
+.dash-acciones { display: flex; gap: 10px; flex-wrap: wrap; }
+#btn-escanear { background: var(--accent); text-decoration: none; }
+@media (max-width: 768px) {
+  .dash-acciones { width: 100%; }
+  .dash-acciones .btn-primary { flex: 1 1 100%; justify-content: center; }
+}

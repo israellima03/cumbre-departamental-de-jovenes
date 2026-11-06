@@ -22,6 +22,12 @@ $solo_basico = ['Lider distrital', 'Lider local', 'secretario', 'Equipo departam
         <span>Dashboard</span>
       </a>
 
+      <!-- ESCANEAR CREDENCIAL — todos los roles -->
+      <a href="escanear.php" class="nav-item">
+        <i class="fa-solid fa-qrcode"></i>
+        <span>Escanear Credencial</span>
+      </a>
+
       <!-- CONFIRMAR INSCRIPCIONES (QR y efectivo) — solo admin full -->
       <?php if(puede($admin_full)): ?>
       <a href="confirmar-inscripciones.php" class="nav-item">
