@@ -71,7 +71,8 @@ switch ($accion) {
         }
 
         $stmt = $conn->prepare("
-            SELECT i.nombre, i.apellido, i.carnet, i.celular,
+            SELECT i.id AS inscrito_id, i.nombre, i.apellido, i.carnet, i.celular,
+                   ins.id AS inscripcion_id, ins.codigo_qr,
                    ins.estado_pago, ins.fecha_pago, p.nombre AS paquete
             FROM inscritos i
             INNER JOIN inscripciones ins ON ins.inscrito_id = i.id
@@ -88,37 +89,8 @@ switch ($accion) {
             $fila['fecha'] = $fila['fecha_pago']
                 ? date('d/m/Y H:i', strtotime($fila['fecha_pago']))
                 : '—';
-            /* buscar credencial */
-            $fila['credencial'] = null;
-            $stmt_cred = $conn->prepare("
-                SELECT ins.codigo_qr 
-                FROM inscripciones ins
-                INNER JOIN inscritos i ON i.id = ins.inscrito_id
-                WHERE i.carnet = ? OR i.celular = ?
-                LIMIT 1
-            ");
-            $stmt_cred->bind_param('ss', $busqueda, $busqueda);
-            $stmt_cred->execute();
-            $cred = $stmt_cred->get_result()->fetch_assoc();
-            $stmt_cred->close();
-            if($cred && !empty($cred['codigo_qr'])){
-                /* buscar archivo de credencial por código QR o carnet */
-                $patron1 = __DIR__ . '/credenciales/credencial_' . $cred['codigo_qr'] . '.pdf';
-                $patron2 = __DIR__ . '/credenciales/credencial_' . $busqueda . '_*.html';
-    
-                $fila['credencial'] = null;
-    
-                if(file_exists($patron1)){
-                    $fila['credencial'] = 'credencial_' . $cred['codigo_qr'] . '.pdf';
-                    $fila['tipo_credencial'] = 'pdf';
-                } else {
-                    $archivos = glob($patron2);
-                    if(!empty($archivos)){
-                        $fila['credencial'] = basename(end($archivos));
-                        $fila['tipo_credencial'] = 'html';
-                    }
-                }
-            }
+            $fila['credencial'] = $fila['estado_pago'] === 'confirmado' ? buscar_credencial($conn, $fila) : null;
+            unset($fila['inscrito_id'], $fila['inscripcion_id'], $fila['codigo_qr']);
             echo json_encode(['ok' => true, 'datos' => $fila]);
             
 
@@ -477,6 +449,22 @@ switch ($accion) {
 /* ══════════════════════════════════════════════════════════════════
    FUNCIONES AUXILIARES
    ══════════════════════════════════════════════════════════════════ */
+
+/* devuelve el archivo más reciente de la credencial, o lo genera si no existe */
+function buscar_credencial(mysqli $conn, array $fila) {
+    $pdf = 'credencial_' . $fila['codigo_qr'] . '.pdf';
+    if (!empty($fila['codigo_qr']) && file_exists(__DIR__ . '/credenciales/' . $pdf)) return $pdf;
+
+    /* mismo formato con que se guarda el carnet en el nombre del archivo */
+    $slug = preg_replace('/[^a-z0-9]/', '_', strtolower($fila['carnet']));
+    $archivos = glob(__DIR__ . '/credenciales/credencial_' . $slug . '_*.html') ?: [];
+    /* el patrón exacto evita tomar el archivo de otro carnet: 123 y 123-1k */
+    $propios = preg_grep('/^credencial_' . $slug . '_\d+\.html$/', array_map('basename', $archivos));
+    if ($propios) return end($propios);
+
+    require_once __DIR__ . '/admin/funciones_credencial.php';
+    return generarCredencialHTML($conn, $fila['inscrito_id'], $fila['inscripcion_id']);
+}
 
 function limpiar($v) {
     return htmlspecialchars(strip_tags(trim($v)));
