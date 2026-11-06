@@ -158,7 +158,16 @@ try {
     case 'listar_registrados':
       $punto_id = intval($_GET['punto_id'] ?? 0);
       $buscar   = trim($_GET['buscar'] ?? '');
-      $like     = '%' . $buscar . '%';
+
+      $filtro = '';
+      $tipos  = 'i';
+      $params = [$punto_id];
+      if($buscar !== ''){
+        $like   = '%' . $buscar . '%';
+        $filtro = 'AND (i.nombre LIKE ? OR i.apellido LIKE ? OR i.carnet LIKE ?)';
+        $tipos .= 'sss';
+        array_push($params, $like, $like, $like);
+      }
 
       $stmt = $conn->prepare("
         SELECT r.id, r.fecha, r.metodo,
@@ -173,10 +182,10 @@ try {
         LEFT JOIN paquetes p   ON p.id = ins.paquete_id
         LEFT JOIN usuarios u   ON u.id = r.registrado_por
         WHERE r.punto_id = ?
-          AND (? = '' OR i.nombre LIKE ? OR i.apellido LIKE ? OR i.carnet LIKE ?)
+        $filtro
         ORDER BY r.fecha DESC, r.id DESC
       ");
-      $stmt->bind_param('issss', $punto_id, $buscar, $like, $like, $like);
+      $stmt->bind_param($tipos, ...$params);
       $stmt->execute();
       $filas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
       $stmt->close();
@@ -203,5 +212,7 @@ try {
   }
 } catch(Throwable $e){
   error_log('api_escaner: ' . $e->getMessage());
-  responder(['ok'=>false,'estado'=>'error','msg'=>'Error del sistema. Intenta de nuevo.']);
+  /* el administrador ve el detalle para poder diagnosticar en producción */
+  $detalle = puede(['Administrador']) ? ' (' . $e->getMessage() . ')' : '';
+  responder(['ok'=>false,'estado'=>'error','msg'=>'Error del sistema. Intenta de nuevo.' . $detalle]);
 }
