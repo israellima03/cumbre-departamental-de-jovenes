@@ -25,8 +25,8 @@ if(isset($_SESSION['usuario_id'])){
         }
     }
 
-    /* actualizar tiempo de ultima actividad */
-    $_SESSION['ultima_actividad'] = $ahora;
+    /* actualizar tiempo de ultima actividad; las consultas automáticas no cuentan */
+    if(empty($_GET['auto'])) $_SESSION['ultima_actividad'] = $ahora;
 }
 
 /* ============================================================

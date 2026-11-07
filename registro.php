@@ -1,14 +1,9 @@
 <?php 
 include_once 'includes/templates/header.php';
 require_once('includes/funciones/bd_conexion.php');
-/* verificar si inscripciones están activas */
-$cfg = $conn->query("SELECT valor FROM config_sistema WHERE clave='inscripciones_activas' LIMIT 1")->fetch_assoc();
-if($cfg && $cfg['valor'] == '0'){
-  die('<div style="text-align:center;padding:60px;font-family:sans-serif;">
-    <h2 style="color:#dc2626;">⚠ Inscripciones temporalmente suspendidas</h2>
-    <p>El sistema está en mantenimiento. Vuelve más tarde.</p>
-  </div>');
-}
+/* con las inscripciones cerradas se oculta el formulario, pero sigue la consulta de estado */
+$estado_ins = $conn->query("SELECT valor FROM config_sistema WHERE clave='inscripciones_activas' LIMIT 1")->fetch_assoc();
+$inscripciones_cerradas = $estado_ins && $estado_ins['valor'] == '0';
 
 $iglesias = [];
 $res = $conn->query("
@@ -48,8 +43,14 @@ if($res_r && $row_r = $res_r->fetch_assoc()){
 }
 ?>
 
-<section class="seccion contenedor">
+<section class="seccion contenedor <?php echo $inscripciones_cerradas ? 'inscripciones-cerradas' : ''; ?>" id="seccion-registro">
   <h2>Inscripción a la Cumbre</h2>
+
+  <div class="aviso-suspendido">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <strong>Inscripciones temporalmente suspendidas</strong>
+    <p>Vuelve más tarde. Si ya te inscribiste, puedes consultar tu estado y descargar tu credencial aquí abajo.</p>
+  </div>
 
   <div class="aviso-qr">
     <i class="fa-solid fa-qrcode"></i>
@@ -142,7 +143,7 @@ if($res_r && $row_r = $res_r->fetch_assoc()){
             $agotado  = $paq['cupos_disponibles'] <= 0;
           ?>
             <li>
-              <div class="tabla-precio <?php echo $agotado ? 'agotado' : ''; ?>">
+              <div class="tabla-precio <?php echo $agotado ? 'agotado' : ''; ?>" data-paquete="<?php echo $paq['id']; ?>">
                 <label class="paquete-label">
                   <input type="radio" name="paquete"
                          value="<?php echo $paq['id']; ?>"
@@ -185,9 +186,7 @@ if($res_r && $row_r = $res_r->fetch_assoc()){
                   <?php endforeach; ?>
                 </ul>
 
-                <?php if($agotado): ?>
-                  <p class="texto-agotado">AGOTADO</p>
-                <?php endif; ?>
+                <p class="texto-agotado" <?php echo $agotado ? '' : 'hidden'; ?>>AGOTADO</p>
               </div>
             </li>
           <?php endforeach; ?>
@@ -333,4 +332,5 @@ if($res_r && $row_r = $res_r->fetch_assoc()){
 
 </section>
 
+<?php $js_pagina = ['tiempo-real.js']; ?>
 <?php include_once 'includes/templates/footer.php'; ?>

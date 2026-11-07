@@ -544,3 +544,22 @@ span.tipo-evento-badge.tipo-taller      { background: rgba(232,117,10,0.14); col
 .aviso-vigencia strong { color: var(--vino); }
 .aviso-vigencia i { margin-right: 4px; }
 .aviso-efectivo.aviso-plazo { margin-top: 10px; }
+
+/* ── INSCRIPCIONES SUSPENDIDAS ── */
+.aviso-suspendido {
+  display: none;
+  margin-bottom: 24px;
+  padding: 24px;
+  border-left: 5px solid var(--naranja);
+  border-radius: 8px;
+  background: #fff;
+  text-align: center;
+  color: var(--indigo);
+}
+.aviso-suspendido i { display: block; margin-bottom: 8px; font-size: 2em; color: var(--naranja); }
+.aviso-suspendido strong { font-family: var(--f-info); font-size: 1.3em; }
+.seccion .aviso-suspendido p { margin: 8px 0 0; font-size: 1em; }
+.inscripciones-cerradas .aviso-suspendido { display: block; }
+.inscripciones-cerradas .aviso-qr,
+.inscripciones-cerradas #bloque-formulario,
+.inscripciones-cerradas #bloque-resumen { display: none !important; }

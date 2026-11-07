@@ -1193,7 +1193,7 @@ body.sidebar-collapsed .main-wrapper { margin-left: 0; }
   .tabla-wrap > table { width: max-content; min-width: 100%; }
   .tabla-wrap th,
   .tabla-wrap td { white-space: nowrap; }
-  .tabla-wrap td .pregunta-txt,
+  .tabla-wrap td.pregunta-txt,
   .tabla-wrap td.col-desc { white-space: normal; min-width: 220px; }
 }
 

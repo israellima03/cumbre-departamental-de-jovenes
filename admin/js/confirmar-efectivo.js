@@ -7,6 +7,7 @@
 var lista = [];
 var puedeConfirmar = false;
 var puedeEliminar  = false;
+var firmaLista     = null;
 
 /* ── PESTAÑAS ── */
 document.querySelectorAll('.ci-tab').forEach(function(btn){
@@ -21,19 +22,23 @@ document.querySelectorAll('.ci-tab').forEach(function(btn){
 });
 
 /* ── CARGAR ── */
-function cargar(){
+function cargar(modo){
+  var auto  = modo === true;
   var tbody = document.getElementById('tbody-efectivo');
-  tbody.innerHTML = '<tr><td colspan="12" class="tabla-loading"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
+  if(!auto) tbody.innerHTML = '<tr><td colspan="12" class="tabla-loading"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
 
   var url = 'api_qr.php?accion=listar_efectivo'
     + '&buscar='      + encodeURIComponent(document.getElementById('ef-buscar').value.trim())
     + '&distrito_id=' + encodeURIComponent(document.getElementById('ef-distrito').value)
-    + '&estado='      + encodeURIComponent(document.getElementById('ef-estado').value);
+    + '&estado='      + encodeURIComponent(document.getElementById('ef-estado').value)
+    + (auto ? '&auto=1' : '');
 
-  fetch(url)
-  .then(function(r){ return r.json(); })
+  window.consultarJSON(url)
   .then(function(data){
-    if(!data.ok){ toast('Error al cargar datos','error'); return; }
+    if(!data.ok){ if(!auto) toast('Error al cargar datos','error'); return; }
+    var firma = JSON.stringify(data);
+    if(auto && firma === firmaLista) return;
+    firmaLista = firma;
     lista = data.datos || [];
     puedeConfirmar = !!data.puede_confirmar;
     puedeEliminar  = !!data.puede_eliminar;
@@ -41,8 +46,13 @@ function cargar(){
     setText('ef-num-confirmados', data.confirmados);
     render();
   })
-  .catch(function(){ toast('Error de conexion','error'); });
+  .catch(function(e){ if(!auto && e.message !== 'sesion') toast('Error de conexion','error'); });
 }
+
+setInterval(function(){
+  var panel = document.getElementById('panel-efectivo');
+  if(!document.hidden && panel.classList.contains('active')) cargar(true);
+}, 6000);
 
 /* ── RENDER ── */
 function render(){

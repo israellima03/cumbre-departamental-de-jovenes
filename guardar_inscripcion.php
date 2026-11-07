@@ -28,6 +28,12 @@ switch ($accion) {
        VERIFICAR SI YA ESTA INSCRITO
        ================================================================ */
     case 'verificar':
+        $bloqueo = motivo_bloqueo($conn, intval($_POST['paquete_id'] ?? 0));
+        if ($bloqueo) {
+            echo json_encode(['inscrito' => false, 'bloqueado' => true, 'msg' => $bloqueo]);
+            exit;
+        }
+
         $carnet  = limpiar($_POST['carnet']  ?? '');
         $celular = limpiar($_POST['celular'] ?? '');
 
@@ -449,6 +455,16 @@ switch ($accion) {
 /* ══════════════════════════════════════════════════════════════════
    FUNCIONES AUXILIARES
    ══════════════════════════════════════════════════════════════════ */
+
+/* se revisa antes de pagar: quien ya pagó puede terminar su inscripción */
+function motivo_bloqueo(mysqli $conn, int $paquete_id) {
+    $cfg = $conn->query("SELECT valor FROM config_sistema WHERE clave='inscripciones_activas' LIMIT 1")->fetch_assoc();
+    if ($cfg && $cfg['valor'] === '0') return 'Las inscripciones estan suspendidas en este momento.';
+
+    $paq = $conn->query("SELECT cupos_disponibles FROM paquetes WHERE id=$paquete_id LIMIT 1")->fetch_assoc();
+    if ($paquete_id && (!$paq || intval($paq['cupos_disponibles']) <= 0)) return 'Este paquete ya no tiene cupos disponibles.';
+    return '';
+}
 
 /* devuelve el archivo más reciente de la credencial, o lo genera si no existe */
 function buscar_credencial(mysqli $conn, array $fila) {

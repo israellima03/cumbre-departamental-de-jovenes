@@ -17,6 +17,13 @@ document.addEventListener('DOMContentLoaded', function(){
   initEmergencia();
   initBuscadorIglesia();
   initCerrarModales();
+
+  /* cupos y estado del sistema sin recargar la página */
+  setInterval(function(){
+    if(document.hidden) return;
+    cargarPaquetes(true);
+    cargarEstadoEmergencia(true);
+  }, 6000);
 });
 
 function cargarTodo(){
@@ -29,9 +36,8 @@ function cargarTodo(){
 }
 
 /* ══ PAQUETES ══ */
-function cargarPaquetes(){
-  fetch('api_gestion.php?accion=listar_paquetes')
-  .then(function(r){ return r.json(); })
+function cargarPaquetes(auto){
+  window.consultarJSON('api_gestion.php?accion=listar_paquetes' + (auto ? '&auto=1' : ''))
   .then(function(data){
     var tbody = document.getElementById('tbody-paquetes');
     if(!data.paquetes || !data.paquetes.length){
@@ -337,9 +343,8 @@ function initGuardar(){
 }
 
 /* ══ EMERGENCIA ══ */
-function cargarEstadoEmergencia(){
-  fetch('api_gestion.php?accion=estado_inscripciones')
-  .then(function(r){ return r.json(); })
+function cargarEstadoEmergencia(auto){
+  window.consultarJSON('api_gestion.php?accion=estado_inscripciones' + (auto ? '&auto=1' : ''))
   .then(function(data){ estadoActivo = data.activo; actualizarUIEmergencia(estadoActivo); })
   .catch(function(e){ console.error('emergencia:',e); });
 }

@@ -91,12 +91,15 @@ switch($accion){
     $stmt->close();
  
     $paqData=$conn->query("
-      SELECT p.precio, ROUND(p.precio-(p.precio*COALESCE(d.porcentaje,0)/100),2) AS precio_final
+      SELECT p.precio, p.cupos_disponibles, ROUND(p.precio-(p.precio*COALESCE(d.porcentaje,0)/100),2) AS precio_final
       FROM paquetes p
       LEFT JOIN paquete_descuentos pd ON pd.paquete_id=p.id
       LEFT JOIN descuentos d ON d.id=pd.descuento_id AND d.activo=1
       WHERE p.id=$paq_id LIMIT 1
     ")->fetch_assoc();
+    if(!$paqData || intval($paqData['cupos_disponibles'])<=0){
+      echo json_encode(['ok'=>false,'msg'=>'Este paquete ya no tiene cupos disponibles']); exit;
+    }
     $precio_orig=floatval($paqData['precio']??0);
     $precio_paq =floatval($paqData['precio_final']??$precio_orig);
     $descuento  =round($precio_orig-$precio_paq,2);

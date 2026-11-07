@@ -5,12 +5,18 @@
 'use strict';
 
 var _eliminarId = null;
+var _firmaPreguntas = null;
+var ACTUALIZAR_CADA = 5000;
 
 document.addEventListener('DOMContentLoaded', function(){
   if(SECCION_ACTUAL === 'habilitar' && PUEDE_GESTIONAR_P){
     cargarEventosPreguntas();
   } else {
     cargarPreguntas();
+    /* las preguntas nuevas aparecen sin recargar la página */
+    setInterval(function(){
+      if(!document.hidden) cargarPreguntas(true);
+    }, ACTUALIZAR_CADA);
   }
 
   /* filtros ver preguntas */
@@ -121,16 +127,22 @@ window.togglePreguntas = function(id, valor, checkbox){
 /* ══════════════════════════════════════
    VER PREGUNTAS
 ══════════════════════════════════════ */
-function cargarPreguntas(){
+function cargarPreguntas(modo){
   var evento = (document.getElementById('filtro-evento-preguntas')||{}).value||'';
   var estado = (document.getElementById('filtro-estado-preguntas')||{}).value||'';
   var url = 'api_preguntas.php?accion=listar_preguntas';
   if(evento) url += '&evento='+evento;
   if(estado) url += '&estado='+encodeURIComponent(estado);
+  if(modo === true) url += '&auto=1';
 
-  fetch(url)
-  .then(function(r){ return r.json(); })
-  .then(function(data){ renderPreguntas(data.preguntas||[]); })
+  window.consultarJSON(url)
+  .then(function(data){
+    var lista = data.preguntas||[];
+    var firma = JSON.stringify(lista);
+    if(firma === _firmaPreguntas) return;
+    _firmaPreguntas = firma;
+    renderPreguntas(lista);
+  })
   .catch(function(e){ console.error(e); });
 }
 window.cargarPreguntas = cargarPreguntas;
@@ -152,32 +164,33 @@ function renderPreguntas(lista){
   };
 
   tbody.innerHTML = lista.map(function(p, i){
-    var estadoBadge = '<span class="'+(estadoColores[p.estado]||'badge')+'">'+esc(p.estado)+'</span>';
+    var posicion = p.estado === 'aprobada' && p.posicion > 0 ? ' #'+p.posicion : '';
+    var estadoBadge = '<span class="'+(estadoColores[p.estado]||'badge')+'">'+esc(p.estado)+posicion+'</span>';
     var evento = esc((p.dia||''))+' '+esc((p.horario||''))+' <small style="color:var(--txt-xsoft);">'+esc(p.tipo_evento||'')+'</small>';
     var fecha = p.fecha_envio ? p.fecha_envio.substring(0,16).replace('T',' ') : '—';
 
     var acciones = '';
     if(PUEDE_GESTIONAR_P){
-      acciones = '<td style="white-space:nowrap;">'+
+      acciones = '<td class="pq-acciones" style="white-space:nowrap;">'+
         /* aprobar */
         (p.estado !== 'aprobada'
-          ? '<button class="btn-accion" style="color:var(--green);" onclick="cambiarEstado('+p.id+',\'aprobada\')" title="Aprobar"><i class="fa-solid fa-check"></i></button> '
+          ? '<button class="btn-accion btn-pq-aprobar" style="color:var(--green);" onclick="cambiarEstado('+p.id+',\'aprobada\')" title="Aprobar" aria-label="Aprobar"><i class="fa-solid fa-check"></i></button> '
           : '')+
         /* rechazar */
         (p.estado !== 'rechazada'
-          ? '<button class="btn-accion" style="color:var(--orange);" onclick="cambiarEstado('+p.id+',\'rechazada\')" title="Rechazar"><i class="fa-solid fa-xmark"></i></button> '
+          ? '<button class="btn-accion btn-pq-rechazar" style="color:var(--orange);" onclick="cambiarEstado('+p.id+',\'rechazada\')" title="Rechazar" aria-label="Rechazar"><i class="fa-solid fa-xmark"></i></button> '
           : '')+
         /* eliminar */
-        '<button class="btn-accion" style="color:#dc2626;" onclick="abrirEliminarPregunta('+p.id+')" title="Eliminar"><i class="fa-solid fa-trash"></i></button>'+
+        '<button class="btn-accion btn-pq-eliminar" style="color:#dc2626;" onclick="abrirEliminarPregunta('+p.id+')" title="Eliminar" aria-label="Eliminar"><i class="fa-solid fa-trash"></i></button>'+
       '</td>';
     }
 
     return '<tr>'+
-      '<td>'+(i+1)+'</td>'+
-      '<td style="font-size:11px;">'+evento+'</td>'+
+      '<td class="pq-num">'+(i+1)+'</td>'+
+      '<td class="pq-evento" style="font-size:11px;">'+evento+'</td>'+
       '<td class="pregunta-txt">'+esc(p.pregunta)+'</td>'+
-      '<td>'+estadoBadge+'</td>'+
-      '<td style="font-size:11px;white-space:nowrap;">'+esc(fecha)+'</td>'+
+      '<td class="pq-estado">'+estadoBadge+'</td>'+
+      '<td class="pq-fecha" style="font-size:11px;white-space:nowrap;">'+esc(fecha)+'</td>'+
       acciones+
     '</tr>';
   }).join('');

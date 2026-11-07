@@ -226,7 +226,7 @@
           if($con_alimento) $bens[] = 'Almuerzo en el Hotel';
         ?>
           <li>
-            <div class="tabla-precio <?php echo $agotado ? 'agotado' : ''; ?>">
+            <div class="tabla-precio <?php echo $agotado ? 'agotado' : ''; ?>" data-paquete="<?php echo $paq['id']; ?>">
 
               <!-- nombre del paquete -->
               <h3><?php echo htmlspecialchars($paq['nombre']); ?></h3>
@@ -398,4 +398,5 @@
     </div>
   </section>
   
+<?php $js_pagina = ['tiempo-real.js']; ?>
 <?php include_once 'includes/templates/footer.php'; ?>

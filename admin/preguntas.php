@@ -115,7 +115,7 @@ if($res) while($r = $res->fetch_assoc()) $eventos_lista[] = $r;
       </select>
     </div>
     <div class="tabla-wrap" style="overflow-x:auto;">
-      <table class="tabla-inscritos">
+      <table class="tabla-inscritos tabla-preguntas">
         <thead>
           <tr>
             <th>#</th>
@@ -206,6 +206,60 @@ if($res) while($r = $res->fetch_assoc()) $eventos_lista[] = $r;
 
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
+  /* en celular cada pregunta es una tarjeta con sus botones al lado */
+  .tabla-wrap > table.tabla-preguntas,
+  .tabla-preguntas tbody { display: block; width: 100%; min-width: 0; }
+  .tabla-preguntas thead { display: none; }
+  .tabla-preguntas tbody { padding: 12px; }
+  .tabla-preguntas tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px 12px;
+    margin-bottom: 12px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
+  }
+  .tabla-preguntas tbody tr:last-child { margin-bottom: 0; }
+  .tabla-preguntas tbody td {
+    display: block;
+    padding: 0;
+    border: none;
+    white-space: normal !important;
+  }
+  .tabla-preguntas td[colspan] { grid-column: 1 / -1; }
+  .tabla-preguntas .pq-num { display: none; }
+  .tabla-preguntas .pregunta-txt {
+    grid-column: 1;
+    max-width: none;
+    min-width: 0;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    color: var(--txt);
+  }
+  .tabla-preguntas .pq-estado { grid-column: 1; }
+  .tabla-preguntas .pq-evento { grid-column: 1; color: var(--txt-soft); }
+  .tabla-preguntas .pq-fecha  { grid-column: 1; color: var(--txt-soft); }
+  .tabla-preguntas .pq-acciones {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tabla-preguntas .pq-acciones .btn-accion {
+    width: 46px;
+    height: 46px;
+    margin: 0;
+    font-size: 18px;
+  }
+  .tabla-preguntas .btn-pq-aprobar  { background: var(--green);  border-color: var(--green);  color: #fff !important; }
+  .tabla-preguntas .btn-pq-rechazar { background: var(--orange); border-color: var(--orange); color: #fff !important; }
+
   .page-header { flex-direction: column; align-items: flex-start; }
   .page-header > div:last-child { width: 100%; }
   .page-header > div:last-child a { flex: 1; justify-content: center; }

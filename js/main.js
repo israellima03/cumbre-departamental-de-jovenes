@@ -122,6 +122,9 @@ console.log("JS FUNCIONANDO");
       }
 
       /* BUSCADOR DE ESTADO */
+      var ultimaBusqueda = '';
+      var ultimoEstado   = '';
+      var timerEstado    = null;
       var btnBuscarEstado = document.getElementById('btn-buscar');
       if (btnBuscarEstado) btnBuscarEstado.addEventListener('click', ejecutarBusqueda);
 
@@ -132,23 +135,42 @@ console.log("JS FUNCIONANDO");
         });
       }
 
-      function ejecutarBusqueda() {
-        var busqueda  = document.getElementById('buscar-inscrito').value.trim();
+      /* mientras esté pendiente se revisa solo, hasta que lo confirmen */
+      function revisarEstadoLuego() {
+        clearTimeout(timerEstado);
+        timerEstado = setTimeout(function () {
+          if (document.hidden) revisarEstadoLuego();
+          else ejecutarBusqueda(true);
+        }, 6000);
+      }
+
+      function ejecutarBusqueda(modo) {
+        var auto      = modo === true;
+        var busqueda  = auto ? ultimaBusqueda : document.getElementById('buscar-inscrito').value.trim();
         var resultado = document.getElementById('resultado-busqueda');
         var btn       = document.getElementById('btn-buscar');
+        clearTimeout(timerEstado);
         if (!busqueda) { resultado.innerHTML = '<p style="color:#E8750A;text-align:center;">Ingresa tu carnet o celular</p>'; return; }
-        btn.disabled  = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando...';
+        ultimaBusqueda = busqueda;
+        if (!auto) {
+          btn.disabled  = true;
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Buscando...';
+        }
         var fd = new FormData();
         fd.append('accion', 'buscar_estado');
         fd.append('busqueda', busqueda);
         fetch('guardar_inscripcion.php', { method: 'POST', body: fd })
         .then(function (r) { return r.json(); })
         .then(function (data) {
-          btn.disabled  = false;
-          btn.innerHTML = '<i class="fa-solid fa-search"></i> Consultar Estado';
+          if (!auto) {
+            btn.disabled  = false;
+            btn.innerHTML = '<i class="fa-solid fa-search"></i> Consultar Estado';
+          }
           if (data.ok) {
             var d = data.datos;
+            if (d.estado_pago === 'pendiente') revisarEstadoLuego();
+            if (auto && d.estado_pago === ultimoEstado) return;
+            ultimoEstado = d.estado_pago;
             var est = d.estado_pago === 'confirmado'
               ? '<span class="estado-confirmado"><i class="fa-solid fa-circle-check"></i> CONFIRMADO</span>'
               : '<span class="estado-pendiente"><i class="fa-solid fa-clock"></i> PENDIENTE — en espera de verificacion</span>';
@@ -182,6 +204,7 @@ console.log("JS FUNCIONANDO");
           }
         })
         .catch(function () {
+          if (auto) { revisarEstadoLuego(); return; }
           btn.disabled  = false;
           btn.innerHTML = '<i class="fa-solid fa-search"></i> Consultar Estado';
           resultado.innerHTML = '<p style="color:#E8750A;text-align:center;">Error de conexion.</p>';
@@ -243,11 +266,13 @@ console.log("JS FUNCIONANDO");
           fd.append('accion',  'verificar');
           fd.append('carnet',  carnet);
           fd.append('celular', celular);
+          fd.append('paquete_id', radio.value);
           fetch('guardar_inscripcion.php', { method: 'POST', body: fd })
           .then(function (r) { return r.json(); })
           .then(function (data) {
             btnCalc.disabled  = false;
             btnCalc.innerHTML = '<i class="fa-solid fa-eye"></i> Ver Resumen y Continuar al Pago';
+            if (data.bloqueado) { mostrarError('err-paquete', data.msg); return; }
             if (data.inscrito) { mostrarYaInscrito(data); return; }
             mostrarResumen(radio);
           })

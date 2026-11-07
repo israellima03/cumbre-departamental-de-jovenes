@@ -51,6 +51,9 @@ switch($accion){
     if($filtro_estado) $where .= " AND pp.estado='".addslashes($filtro_estado)."'";
     $res = $conn->query("
       SELECT pp.*,
+             (SELECT COUNT(*) FROM preguntas_publico x
+              WHERE x.id_evento = pp.id_evento AND x.estado = 'aprobada'
+                AND x.orden_aprobacion <= pp.orden_aprobacion) AS posicion,
              d.nombre AS dia,
              CONCAT(e.hora_inicio,' – ',e.hora_fin) AS horario,
              e.tipo_evento
@@ -72,7 +75,17 @@ switch($accion){
     if(!$id || !in_array($estado,['pendiente','aprobada','rechazada'])){
       echo json_encode(['ok'=>false,'msg'=>'Datos inválidos']); exit;
     }
-    $conn->query("UPDATE preguntas_publico SET estado='$estado' WHERE id=$id");
+    if($estado === 'aprobada'){
+      /* el público ve las preguntas en el orden en que se aprueban */
+      $conn->query("
+        UPDATE preguntas_publico p
+        INNER JOIN (SELECT COALESCE(MAX(orden_aprobacion),0)+1 AS siguiente FROM preguntas_publico) m
+        SET p.estado='aprobada', p.orden_aprobacion=m.siguiente
+        WHERE p.id=$id AND p.estado<>'aprobada'
+      ");
+    } else {
+      $conn->query("UPDATE preguntas_publico SET estado='$estado', orden_aprobacion=NULL WHERE id=$id");
+    }
     echo json_encode(['ok'=>true,'msg'=>'Estado actualizado']);
     break;
 

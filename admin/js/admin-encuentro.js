@@ -9,6 +9,9 @@ var inscritosFiltrados = [];
 var paginaTabla        = 1;
 var porPagina          = 15;
 var inscritoCredencial = null;
+var firmaStats         = null;
+var firmaInscritos     = null;
+var ACTUALIZAR_CADA    = 6000;
 
 /* ══════════════════════════════════════
    HELPERS GLOBALES (definidos primero)
@@ -49,16 +52,25 @@ document.addEventListener('DOMContentLoaded', function(){
   initCredencial();
   initExportarPDF();
   initModalEntrega();
+
+  /* inscripciones, confirmaciones y cupos sin recargar la página */
+  setInterval(function(){
+    if(document.hidden) return;
+    cargarStats(true);
+    cargarInscritos(true);
+  }, ACTUALIZAR_CADA);
 });
 
 /* ══════════════════════════════════════
    STATS
 ══════════════════════════════════════ */
-function cargarStats(){
-  fetch('api_dashboard.php?accion=stats')
-  .then(function(r){ return r.json(); })
+function cargarStats(auto){
+  window.consultarJSON('api_dashboard.php?accion=stats' + (auto ? '&auto=1' : ''))
   .then(function(data){
     if(!data.ok) return;
+    var firma = JSON.stringify(data);
+    if(firma === firmaStats) return;
+    firmaStats = firma;
     animarNum('stat-total',data.total);
     animarNum('stat-pendientes',data.pendientes);
     animarNum('stat-confirmados',data.confirmados);
@@ -76,14 +88,20 @@ function cargarStats(){
 /* ══════════════════════════════════════
    INSCRITOS
 ══════════════════════════════════════ */
-function cargarInscritos(){
+function cargarInscritos(auto){
   var tbody=document.getElementById('tbody-inscritos');
-  if(tbody) tbody.innerHTML='<tr><td colspan="13" class="tabla-loading"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
-  fetch('api_dashboard.php?accion=listar_inscritos')
-  .then(function(r){ return r.json(); })
+  if(tbody && !auto) tbody.innerHTML='<tr><td colspan="13" class="tabla-loading"><i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
+  window.consultarJSON('api_dashboard.php?accion=listar_inscritos' + (auto ? '&auto=1' : ''))
   .then(function(data){
+    if(!data.ok) return;
+    var firma=JSON.stringify(data.inscritos||[]);
+    if(auto && firma===firmaInscritos) return;
+    firmaInscritos=firma;
     todosInscritos=data.inscritos||[];
-    inscritosFiltrados=todosInscritos.slice();
+    /* conserva los filtros y la página en que está quien revisa */
+    filtrarInscritos();
+    var ultima=Math.max(1,Math.ceil(inscritosFiltrados.length/porPagina));
+    if(paginaTabla>ultima) paginaTabla=ultima;
     renderTabla();
   }).catch(function(e){ console.error('inscritos:',e); });
 }
@@ -194,6 +212,11 @@ function initFiltros(){
 }
 
 function aplicarFiltros(){
+  filtrarInscritos();
+  paginaTabla=1; renderTabla();
+}
+
+function filtrarInscritos(){
   var q=val('filtro-carnet'),igl=val('filtro-iglesia'),dist=val('filtro-distrito'),pago=val('filtro-pago'),est=val('filtro-estado');
   inscritosFiltrados=todosInscritos.filter(function(ins){
     return (!q||(ins.nombre+' '+ins.apellido+' '+ins.carnet).toLowerCase().includes(q.toLowerCase()))
@@ -202,7 +225,6 @@ function aplicarFiltros(){
       &&(!pago||ins.metodo_pago===pago)
       &&(!est||ins.estado_pago===est);
   });
-  paginaTabla=1; renderTabla();
 }
 
 /* ══════════════════════════════════════

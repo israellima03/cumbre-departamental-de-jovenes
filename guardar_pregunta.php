@@ -57,7 +57,7 @@ switch($accion){
             SELECT id, pregunta, fecha_envio
             FROM preguntas_publico
             WHERE id_evento = ? AND estado = 'aprobada'
-            ORDER BY fecha_envio ASC
+            ORDER BY orden_aprobacion ASC, id ASC
         ");
         $stmt->bind_param('i', $id_evento);
         $stmt->execute();

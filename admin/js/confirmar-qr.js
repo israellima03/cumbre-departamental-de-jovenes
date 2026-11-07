@@ -6,33 +6,42 @@ var filtrados    = [];
 var paginaActual = 1;
 var porPagina    = 10;
 var inscActual   = null;
+var firmaLista   = null;
 
 /* ── CARGAR DATOS ── */
-function cargar(){
+function cargar(modo){
+    var auto        = modo === true;
     var buscar      = document.getElementById('qr-buscar').value.trim();
     var estado      = document.getElementById('qr-estado').value;
     var fechaDesde  = document.getElementById('qr-fecha-desde').value;
     var fechaHasta  = document.getElementById('qr-fecha-hasta').value;
 
-    setText('qr-total-lbl', 'Cargando...');
-    document.getElementById('tbody-qr').innerHTML =
-        '<tr><td colspan="12" class="tabla-loading">' +
-        '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
+    if(!auto){
+        setText('qr-total-lbl', 'Cargando...');
+        document.getElementById('tbody-qr').innerHTML =
+            '<tr><td colspan="12" class="tabla-loading">' +
+            '<i class="fa-solid fa-spinner fa-spin"></i> Cargando...</td></tr>';
+    }
 
     var url = 'api_qr.php?accion=listar'
         + '&buscar='      + encodeURIComponent(buscar)
         + '&estado='      + encodeURIComponent(estado)
         + '&fecha_desde=' + encodeURIComponent(fechaDesde)
-        + '&fecha_hasta=' + encodeURIComponent(fechaHasta);
+        + '&fecha_hasta=' + encodeURIComponent(fechaHasta)
+        + (auto ? '&auto=1' : '');
 
-    fetch(url)
-    .then(function(r){ return r.json(); })
+    window.consultarJSON(url)
     .then(function(data){
-        if(!data.ok){ mostrarToast('Error al cargar datos','error'); return; }
+        if(!data.ok){ if(!auto) mostrarToast('Error al cargar datos','error'); return; }
+
+        var firma = JSON.stringify(data);
+        if(auto && firma === firmaLista) return;
+        firmaLista = firma;
 
         todos     = data.datos || [];
         filtrados = todos;
-        paginaActual = 1;
+        if(!auto) paginaActual = 1;
+        paginaActual = Math.min(paginaActual, Math.max(1, Math.ceil(filtrados.length / porPagina)));
 
         setText('num-pendientes',  data.pendientes);
         setText('num-confirmados', data.confirmados);
@@ -40,7 +49,7 @@ function cargar(){
 
         renderTabla();
     })
-    .catch(function(){ mostrarToast('Error de conexion','error'); });
+    .catch(function(e){ if(!auto && e.message !== 'sesion') mostrarToast('Error de conexion','error'); });
 }
 
 /* ── RENDER TABLA ── */
@@ -320,6 +329,12 @@ function mostrarToast(msg, tipo){
 
 
 /* ── INIT ── */
-document.addEventListener('DOMContentLoaded', cargar);
+document.addEventListener('DOMContentLoaded', function(){
+    cargar();
+    setInterval(function(){
+        var panel = document.getElementById('panel-qr');
+        if(!document.hidden && panel.classList.contains('active')) cargar(true);
+    }, 6000);
+});
 
 })();

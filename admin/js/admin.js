@@ -5,6 +5,14 @@
 (function(){
 'use strict';
 
+/* consulta JSON que vuelve al login si la sesión venció */
+window.consultarJSON = function(url){
+  return fetch(url).then(function(r){
+    if(r.redirected){ window.location.href = 'login.php?expirado=1'; throw new Error('sesion'); }
+    return r.json();
+  });
+};
+
 document.addEventListener('DOMContentLoaded', function(){
 
   /* ── Submenús colapsables ── */

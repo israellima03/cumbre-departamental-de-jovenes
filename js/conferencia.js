@@ -94,14 +94,16 @@ function mostrarMsg(div, msg, tipo){
 ══════════════════════════════════════ */
 var _pqLista   = [];
 var _pqIndice  = 0;
+var _pqEvento  = null;
+var _pqFirma   = null;
+var _pqTimer   = null;
+var _pqBuscando = false;
+var PQ_ACTUALIZAR_CADA = 4000;
 
 /* abrir modal */
 document.querySelectorAll('.btn-ver-preguntas').forEach(function(btn){
   btn.addEventListener('click', function(){
-    var idEvento = this.dataset.evento;
-    var tema     = this.dataset.tema;
-
-    document.getElementById('modal-pq-tema').textContent     = tema;
+    document.getElementById('modal-pq-tema').textContent     = this.dataset.tema;
     document.getElementById('modal-pq-loading').style.display = 'block';
     document.getElementById('modal-pq-contenido').style.display = 'none';
     document.getElementById('modal-pq-vacio').style.display   = 'none';
@@ -111,32 +113,68 @@ document.querySelectorAll('.btn-ver-preguntas').forEach(function(btn){
     overlay.style.display = 'grid';
     document.body.style.overflow = 'hidden';
 
-    /* cargar preguntas */
-    var fd = new FormData();
-    fd.append('accion',    'listar_aprobadas');
-    fd.append('id_evento', idEvento);
+    _pqEvento = this.dataset.evento;
+    _pqFirma  = null;
+    _pqIndice = 0;
+    _pqLista  = [];
+    buscarPreguntas();
 
-    fetch('guardar_pregunta.php', { method: 'POST', body: fd })
-    .then(function(r){ return r.json(); })
-    .then(function(data){
-      document.getElementById('modal-pq-loading').style.display = 'none';
-
-      if(!data.ok || !data.preguntas || !data.preguntas.length){
-        document.getElementById('modal-pq-vacio').style.display = 'block';
-        return;
-      }
-
-      _pqLista  = data.preguntas;
-      _pqIndice = 0;
-      mostrarPreguntaActual();
-      document.getElementById('modal-pq-nav').style.display = 'flex';
-    })
-    .catch(function(){
-      document.getElementById('modal-pq-loading').style.display = 'none';
-      document.getElementById('modal-pq-vacio').style.display   = 'block';
-    });
+    /* las preguntas aprobadas aparecen sin recargar la página */
+    clearInterval(_pqTimer);
+    _pqTimer = setInterval(function(){
+      if(!document.hidden) buscarPreguntas();
+    }, PQ_ACTUALIZAR_CADA);
   });
 });
+
+function buscarPreguntas(){
+  if(_pqBuscando) return;
+  _pqBuscando = true;
+  var evento = _pqEvento;
+
+  var fd = new FormData();
+  fd.append('accion',    'listar_aprobadas');
+  fd.append('id_evento', evento);
+
+  fetch('guardar_pregunta.php', { method: 'POST', body: fd })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    _pqBuscando = false;
+    /* se ignora si el modal se cerró o cambió de conferencia */
+    if(evento === _pqEvento && data.ok) aplicarPreguntas(data.preguntas || []);
+  })
+  .catch(function(){
+    _pqBuscando = false;
+    if(evento === _pqEvento && _pqFirma === null){
+      document.getElementById('modal-pq-loading').style.display = 'none';
+      document.getElementById('modal-pq-vacio').style.display   = 'block';
+    }
+  });
+}
+
+function aplicarPreguntas(lista){
+  var firma = JSON.stringify(lista);
+  if(firma === _pqFirma) return;
+  _pqFirma = firma;
+
+  /* quien está leyendo se queda en su pregunta aunque lleguen otras */
+  var actual = _pqLista[_pqIndice];
+  _pqLista = lista;
+
+  document.getElementById('modal-pq-loading').style.display = 'none';
+  document.getElementById('modal-pq-vacio').style.display   = lista.length ? 'none' : 'block';
+  document.getElementById('modal-pq-nav').style.display     = lista.length ? 'flex' : 'none';
+
+  if(!lista.length){
+    document.getElementById('modal-pq-contenido').style.display = 'none';
+    _pqIndice = 0;
+    return;
+  }
+
+  var posicion = actual ? lista.map(function(p){ return p.id; }).indexOf(actual.id) : -1;
+  _pqIndice = posicion >= 0 ? posicion : Math.min(_pqIndice, lista.length - 1);
+  mostrarPreguntaActual();
+}
 
 function mostrarPreguntaActual(){
   var pq = _pqLista[_pqIndice];
@@ -177,6 +215,8 @@ window.navegarPregunta = function(dir){
 window.cerrarModalPreguntas = function(){
   document.getElementById('modal-preguntas-overlay').style.display = 'none';
   document.body.style.overflow = '';
+  clearInterval(_pqTimer);
+  _pqEvento = null;
   _pqLista  = [];
   _pqIndice = 0;
 };
